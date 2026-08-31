@@ -516,6 +516,8 @@ class AutocompleteEngine:
         variants = {}
 
         def add_variant(variant: str, score: int) -> None:
+            if score < 0:
+                return
             current_score = variants.get(variant)
             if current_score is None or score > current_score:
                 variants[variant] = score
@@ -626,7 +628,7 @@ class AutocompleteEngine:
                 continue
             seen_ids.add(row["id"])
             score = matcher.best_score(row["normalized"])
-            if score is None:
+            if score is None or score < 0:
                 continue
             result = self._result_from_row(row, score)
             if len(best) < K:

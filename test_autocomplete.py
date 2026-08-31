@@ -13,6 +13,7 @@ import zipfile
 
 from autocomplete import (
     AutocompleteEngine,
+    OneEditMatcher,
     normalize_text,
     remove_invalid_control_characters,
     run_cli,
@@ -144,9 +145,14 @@ class AutocompleteSpecificationTests(unittest.TestCase):
             for query in queries:
                 with self.subTest(query=query):
                     results = isolated_engine.get_best_k_completions(query)
-                    self.assertTrue(
-                        any(result.completed_sentence == "Abcdefghij." for result in results)
+                    expected_score = OneEditMatcher(query).best_score(target)
+                    is_returned = any(
+                        result.completed_sentence == "Abcdefghij." for result in results
                     )
+                    if expected_score is not None and expected_score >= 0:
+                        self.assertTrue(is_returned)
+                    else:
+                        self.assertFalse(is_returned)
         finally:
             isolated_engine.close()
 
@@ -165,6 +171,19 @@ class AutocompleteSpecificationTests(unittest.TestCase):
 
     def test_at_most_five_suggestions_are_returned(self) -> None:
         self.assertLessEqual(len(self.engine.get_best_k_completions("a")), 5)
+
+    def test_negative_score_matches_are_not_returned(self) -> None:
+        isolated_archive = Path(self.temporary_directory.name) / "negative-score.zip"
+        with zipfile.ZipFile(isolated_archive, "w") as archive:
+            archive.writestr("only.txt", "A.\n")
+        isolated_engine = AutocompleteEngine.from_archive(isolated_archive)
+        try:
+            # Both inputs can be repaired only through a low-value one-edit
+            # match whose score is negative. Neither may become a suggestion.
+            self.assertEqual(isolated_engine.get_best_k_completions("z"), [])
+            self.assertEqual(isolated_engine.get_best_k_completions("za"), [])
+        finally:
+            isolated_engine.close()
 
     def test_hash_resets_the_interactive_query(self) -> None:
         output = StringIO()
