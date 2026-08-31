@@ -173,6 +173,34 @@ class AutocompleteSpecificationTests(unittest.TestCase):
         self.assertIn("Here are", output.getvalue())
         self.assertIn("The current query was reset.", output.getvalue())
 
+    def test_persistent_index_is_loaded_when_archive_is_unchanged(self) -> None:
+        index_path = Path(self.temporary_directory.name) / "saved-index.sqlite3"
+        first_engine = AutocompleteEngine.from_archive(self.archive_path, index_path=index_path)
+        first_engine.close()
+
+        loaded_engine = AutocompleteEngine.from_archive(self.archive_path, index_path=index_path)
+        try:
+            self.assertTrue(index_path.is_file())
+            self.assertEqual(loaded_engine.index_status, "loaded")
+            self.assertTrue(loaded_engine.get_best_k_completions("to be"))
+        finally:
+            loaded_engine.close()
+
+    def test_persistent_index_rebuilds_when_archive_changes(self) -> None:
+        index_path = Path(self.temporary_directory.name) / "saved-index.sqlite3"
+        first_engine = AutocompleteEngine.from_archive(self.archive_path, index_path=index_path)
+        first_engine.close()
+
+        with zipfile.ZipFile(self.archive_path, "w") as archive:
+            archive.writestr("updated.txt", "A newly indexed sentence.\n")
+
+        rebuilt_engine = AutocompleteEngine.from_archive(self.archive_path, index_path=index_path)
+        try:
+            self.assertEqual(rebuilt_engine.index_status, "rebuilt")
+            self.assertTrue(rebuilt_engine.get_best_k_completions("newly indexed"))
+        finally:
+            rebuilt_engine.close()
+
 
 if __name__ == "__main__":
     unittest.main()

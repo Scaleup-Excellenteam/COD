@@ -22,6 +22,7 @@ import zipfile
 
 K = 5
 NORMALIZED_CORPUS_ALPHABET = string.ascii_lowercase + string.digits + " "
+INDEX_FORMAT_VERSION = 1
 
 
 @dataclass(frozen=True)
@@ -163,13 +164,24 @@ class OneEditMatcher:
 class AutocompleteEngine:
     """Build once, then answer autocomplete requests with low latency."""
 
-    def __init__(self, archive_path: Path) -> None:
+    def __init__(
+        self,
+        archive_path: Path,
+        index_path: Optional[Path] = None,
+        rebuild_index: bool = False,
+    ) -> None:
         self.archive_path = Path(archive_path)
-        self._temporary_directory = tempfile.TemporaryDirectory(prefix="autocomplete-")
-        self._database_path = Path(self._temporary_directory.name) / "index.sqlite3"
+        self._temporary_directory: Optional[tempfile.TemporaryDirectory[str]] = None
+        if index_path is None:
+            self._temporary_directory = tempfile.TemporaryDirectory(prefix="autocomplete-")
+            self._database_path = Path(self._temporary_directory.name) / "index.sqlite3"
+        else:
+            self._database_path = Path(index_path)
+        self.rebuild_index = rebuild_index
         self._connection: Optional[sqlite3.Connection] = None
         self.file_count = 0
         self.indexed_sentence_count = 0
+        self.index_status = "not-built"
 
     def __enter__(self) -> "AutocompleteEngine":
         self.build()
@@ -179,8 +191,13 @@ class AutocompleteEngine:
         self.close()
 
     @classmethod
-    def from_archive(cls, archive_path: Path) -> "AutocompleteEngine":
-        engine = cls(archive_path)
+    def from_archive(
+        cls,
+        archive_path: Path,
+        index_path: Optional[Path] = None,
+        rebuild_index: bool = False,
+    ) -> "AutocompleteEngine":
+        engine = cls(archive_path, index_path=index_path, rebuild_index=rebuild_index)
         engine.build()
         return engine
 
@@ -188,7 +205,8 @@ class AutocompleteEngine:
         if self._connection is not None:
             self._connection.close()
             self._connection = None
-        self._temporary_directory.cleanup()
+        if self._temporary_directory is not None:
+            self._temporary_directory.cleanup()
 
     def build(self) -> None:
         """Run the offline phase over every .txt file in the ZIP archive."""
@@ -198,6 +216,18 @@ class AutocompleteEngine:
         if not self.archive_path.is_file():
             raise FileNotFoundError("Archive was not found: {0}".format(self.archive_path))
 
+        if self._database_path.is_file() and not self.rebuild_index:
+            try:
+                self._load_existing_index()
+                return
+            except (sqlite3.DatabaseError, RuntimeError, ValueError):
+                self._delete_existing_index()
+                self.index_status = "rebuilt"
+        elif self._database_path.is_file():
+            self._delete_existing_index()
+            self.index_status = "rebuilt"
+
+        self._database_path.parent.mkdir(parents=True, exist_ok=True)
         connection = sqlite3.connect(str(self._database_path))
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA journal_mode = OFF")
@@ -283,6 +313,79 @@ class AutocompleteEngine:
 
         connection.commit()
         self._connection = connection
+        if self.index_status != "rebuilt":
+            self.index_status = "built"
+
+        archive_stat = self.archive_path.stat()
+        connection.execute(
+            """
+            CREATE TABLE index_metadata (
+                format_version INTEGER NOT NULL,
+                archive_size INTEGER NOT NULL,
+                archive_mtime_ns INTEGER NOT NULL,
+                file_count INTEGER NOT NULL,
+                sentence_count INTEGER NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO index_metadata(
+                format_version, archive_size, archive_mtime_ns, file_count, sentence_count
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                INDEX_FORMAT_VERSION,
+                archive_stat.st_size,
+                archive_stat.st_mtime_ns,
+                self.file_count,
+                self.indexed_sentence_count,
+            ),
+        )
+        connection.commit()
+
+    def _load_existing_index(self) -> None:
+        """Open a compatible persistent index without rereading the ZIP archive."""
+
+        connection = sqlite3.connect(str(self._database_path))
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA temp_store = MEMORY")
+        connection.execute("PRAGMA cache_size = -131072")
+        try:
+            metadata = connection.execute(
+                """
+                SELECT format_version, archive_size, archive_mtime_ns, file_count, sentence_count
+                FROM index_metadata
+                """
+            ).fetchone()
+            if metadata is None:
+                raise ValueError("The index has no metadata.")
+            archive_stat = self.archive_path.stat()
+            if (
+                metadata["format_version"] != INDEX_FORMAT_VERSION
+                or metadata["archive_size"] != archive_stat.st_size
+                or metadata["archive_mtime_ns"] != archive_stat.st_mtime_ns
+            ):
+                raise ValueError("The index does not match the current archive.")
+            # Confirm that the FTS table is present before accepting the cache.
+            connection.execute("SELECT rowid FROM sentence_search LIMIT 1").fetchone()
+        except Exception:
+            connection.close()
+            raise
+
+        self.file_count = metadata["file_count"]
+        self.indexed_sentence_count = metadata["sentence_count"]
+        self._connection = connection
+        self.index_status = "loaded"
+
+    def _delete_existing_index(self) -> None:
+        """Remove only the explicitly selected SQLite index before rebuilding it."""
+
+        if self._temporary_directory is not None:
+            return
+        if self._database_path.resolve() == self.archive_path.resolve():
+            raise ValueError("The index path must not be the archive path.")
+        self._database_path.unlink()
 
     @staticmethod
     def _insert_batch(
@@ -567,13 +670,19 @@ class AutocompleteEngine:
 _default_engine: Optional[AutocompleteEngine] = None
 
 
-def initialize(archive_path: Path) -> AutocompleteEngine:
+def initialize(
+    archive_path: Path,
+    index_path: Optional[Path] = None,
+    rebuild_index: bool = False,
+) -> AutocompleteEngine:
     """Initialize the default engine used by the required module-level API."""
 
     global _default_engine
     if _default_engine is not None:
         _default_engine.close()
-    _default_engine = AutocompleteEngine.from_archive(archive_path)
+    _default_engine = AutocompleteEngine.from_archive(
+        archive_path, index_path=index_path, rebuild_index=rebuild_index
+    )
     return _default_engine
 
 
@@ -621,14 +730,43 @@ def main() -> None:
         action="store_true",
         help="Build and validate the offline index, then exit.",
     )
+    parser.add_argument(
+        "--index",
+        type=Path,
+        default=Path("index.sqlite3"),
+        help="Persistent SQLite index path. Load it when valid, or create it when missing.",
+    )
+    parser.add_argument(
+        "--rebuild-index",
+        action="store_true",
+        help="Discard the selected index and build it again from the ZIP archive.",
+    )
+    parser.add_argument(
+        "--temporary-index",
+        action="store_true",
+        help="Use a temporary index and delete it when the program exits.",
+    )
     arguments = parser.parse_args()
 
-    print("Building the offline search index. This is done once per run...", flush=True)
+    if arguments.temporary_index and arguments.rebuild_index:
+        parser.error("--temporary-index cannot be combined with --rebuild-index.")
+
+    print("Preparing the offline search index...", flush=True)
     started_at = time.perf_counter()
-    engine = AutocompleteEngine.from_archive(arguments.archive)
+    engine = AutocompleteEngine.from_archive(
+        arguments.archive,
+        index_path=None if arguments.temporary_index else arguments.index,
+        rebuild_index=arguments.rebuild_index,
+    )
     try:
+        action = {
+            "loaded": "Loaded existing index",
+            "built": "Built new index",
+            "rebuilt": "Rebuilt index",
+        }[engine.index_status]
         print(
-            "Indexed {0:,} non-empty lines from {1:,} text files in {2:.1f} seconds.".format(
+            "{0}: {1:,} non-empty lines from {2:,} text files in {3:.1f} seconds.".format(
+                action,
                 engine.indexed_sentence_count,
                 engine.file_count,
                 time.perf_counter() - started_at,

@@ -14,10 +14,20 @@ The supplied archive name is already the default. To specify another archive:
 py autocomplete.py --archive "Archive (2).zip"
 ```
 
-The program performs the required offline phase first: it reads every `.txt`
-file inside the ZIP, normalizes its non-empty lines, and builds temporary
-SQLite FTS5 indexes. The indexes are deleted when the program closes, so they
-are rebuilt at the start of every run.
+The program performs the required offline phase first. By default it stores a
+persistent SQLite FTS5 index in `index.sqlite3`: if it matches the current ZIP,
+the next run loads it immediately; otherwise it is created or rebuilt.
+
+```powershell
+# Force a fresh index build.
+py autocomplete.py --rebuild-index
+
+# Use a named persistent index file.
+py autocomplete.py --index "my-index.sqlite3"
+
+# Keep the former behavior: use a temporary index and delete it on exit.
+py autocomplete.py --temporary-index
+```
 
 During the online phase, each Enter appends text to the active query. Enter `#`
 by itself to reset the query completely.
