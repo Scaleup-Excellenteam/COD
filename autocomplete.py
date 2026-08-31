@@ -698,8 +698,20 @@ def run_cli(engine: AutocompleteEngine) -> None:
     """Run the required online phase, appending input until '#' resets it."""
 
     query = ""
-    print("The system is ready. Type additional text and press Enter.")
-    print("Type # by itself to clear the current query. Press Ctrl+C to exit.")
+    print("The Format:\n")
+    print("Current text []: INPUT")
+    print("Here are 5 suggestions:")
+    print("1. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
+    print("2. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
+    print("3. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
+    print("4. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
+    print("5. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
+    print("Current text [INPUT]:")
+    print("-" * 80)
+    print("The system is ready!\n")
+    print("-  Type text and press 'Enter'.")
+    print("-  Type # to clear the current query. ")
+    print("-  Press Ctrl+C to exit.\n")
     try:
         while True:
             addition = input("Current text [{0}]: ".format(query))
@@ -713,6 +725,7 @@ def run_cli(engine: AutocompleteEngine) -> None:
             print("Here are {0} suggestions:".format(len(suggestions)))
             for number, suggestion in enumerate(suggestions, start=1):
                 print(suggestion.format_for_cli(number))
+            print()
     except (EOFError, KeyboardInterrupt):
         print("\nGoodbye.")
 
@@ -751,7 +764,8 @@ def main() -> None:
     if arguments.temporary_index and arguments.rebuild_index:
         parser.error("--temporary-index cannot be combined with --rebuild-index.")
 
-    print("Preparing the offline search index...", flush=True)
+    print("\nBuilding the offline search index...", flush=True)
+    print("-" * 80)
     started_at = time.perf_counter()
     engine = AutocompleteEngine.from_archive(
         arguments.archive,
@@ -772,6 +786,7 @@ def main() -> None:
                 time.perf_counter() - started_at,
             )
         )
+        print("-" * 80)
         if not arguments.build_only:
             run_cli(engine)
     finally:
