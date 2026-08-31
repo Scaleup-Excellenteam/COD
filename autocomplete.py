@@ -163,13 +163,15 @@ class OneEditMatcher:
 class AutocompleteEngine:
     """Build once, then answer autocomplete requests with low latency."""
 
-    def __init__(self, archive_path: Path) -> None:
+    def __init__(self, archive_path: Path, debug_profile: bool = False) -> None:
         self.archive_path = Path(archive_path)
+        self.debug_profile = debug_profile
         self._temporary_directory = tempfile.TemporaryDirectory(prefix="autocomplete-")
         self._database_path = Path(self._temporary_directory.name) / "index.sqlite3"
         self._connection: Optional[sqlite3.Connection] = None
         self.file_count = 0
         self.indexed_sentence_count = 0
+        self._active_query_profile: Optional[dict] = None
 
     def __enter__(self) -> "AutocompleteEngine":
         self.build()
@@ -179,8 +181,10 @@ class AutocompleteEngine:
         self.close()
 
     @classmethod
-    def from_archive(cls, archive_path: Path) -> "AutocompleteEngine":
-        engine = cls(archive_path)
+    def from_archive(
+        cls, archive_path: Path, debug_profile: bool = False
+    ) -> "AutocompleteEngine":
+        engine = cls(archive_path, debug_profile=debug_profile)
         engine.build()
         return engine
 
@@ -198,6 +202,7 @@ class AutocompleteEngine:
         if not self.archive_path.is_file():
             raise FileNotFoundError("Archive was not found: {0}".format(self.archive_path))
 
+        profile_started = time.perf_counter()
         connection = sqlite3.connect(str(self._database_path))
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA journal_mode = OFF")
@@ -215,8 +220,12 @@ class AutocompleteEngine:
             )
             """
         )
+        schema_ready_at = time.perf_counter()
         batch: List[Tuple[str, str, str, int]] = []
+        raw_line_count = 0
+        inserted_batch_count = 0
         connection.execute("BEGIN")
+        archive_read_started = time.perf_counter()
         with zipfile.ZipFile(self.archive_path) as archive:
             for entry in archive.infolist():
                 if entry.is_dir() or not entry.filename.lower().endswith(".txt"):
@@ -225,6 +234,7 @@ class AutocompleteEngine:
                 with archive.open(entry, "r") as source:
                     # Invalid bytes are intentionally discarded, as requested.
                     for offset, raw_line in enumerate(source, start=1):
+                        raw_line_count += 1
                         original = remove_invalid_control_characters(
                             raw_line.decode("utf-8", errors="ignore").rstrip("\r\n")
                         )
@@ -234,11 +244,14 @@ class AutocompleteEngine:
                         batch.append((normalized, original, entry.filename, offset))
                         if len(batch) == 5000:
                             self._insert_batch(connection, batch)
+                            inserted_batch_count += 1
                             batch.clear()
         if batch:
             self._insert_batch(connection, batch)
+            inserted_batch_count += 1
 
         connection.commit()
+        archive_loaded_at = time.perf_counter()
 
         # Creating this after bulk insertion is much faster than updating it
         # for every one of the millions of corpus lines.
@@ -254,10 +267,12 @@ class AutocompleteEngine:
             )
             """
         )
+        alphabetical_index_ready_at = time.perf_counter()
 
         self.indexed_sentence_count = connection.execute(
             "SELECT COUNT(*) FROM sentences"
         ).fetchone()[0]
+        count_ready_at = time.perf_counter()
 
         # The trigram index supports fast exact-substring and anchor queries.
         # It is an external-content FTS table, so source text is stored only once.
@@ -283,6 +298,27 @@ class AutocompleteEngine:
 
         connection.commit()
         self._connection = connection
+        if self.debug_profile:
+            finished_at = time.perf_counter()
+            print("[debug][build] database setup: {0:.3f}s".format(schema_ready_at - profile_started))
+            print(
+                "[debug][build] ZIP read, normalize and insert: {0:.3f}s "
+                "({1:,} raw lines, {2:,} batches)".format(
+                    archive_loaded_at - archive_read_started,
+                    raw_line_count,
+                    inserted_batch_count,
+                )
+            )
+            print(
+                "[debug][build] alphabetical index: {0:.3f}s".format(
+                    alphabetical_index_ready_at - archive_loaded_at
+                )
+            )
+            print(
+                "[debug][build] row count: {0:.3f}s".format(count_ready_at - alphabetical_index_ready_at)
+            )
+            print("[debug][build] FTS trigram index: {0:.3f}s".format(finished_at - count_ready_at))
+            print("[debug][build] total offline phase: {0:.3f}s".format(finished_at - profile_started))
 
     @staticmethod
     def _insert_batch(
@@ -439,6 +475,9 @@ class AutocompleteEngine:
                     insertion_score,
                 )
 
+        if self._active_query_profile is not None:
+            self._active_query_profile["variant_count"] = len(variants)
+
         best_by_id = {}
         # Exact results are already known to be the only possible highest-score
         # matches. They may be fewer than five, otherwise the caller exits early.
@@ -449,12 +488,20 @@ class AutocompleteEngine:
             for variant, variant_score in variants.items():
                 if variant_score != score:
                     continue
+                lookup_started = time.perf_counter()
                 for row in self._variant_rows(variant):
+                    if self._active_query_profile is not None:
+                        self._active_query_profile["variant_rows"] += 1
                     result = self._result_from_row(row, score)
                     key = (result.completed_sentence, result.source_text, result.offset)
                     current = best_by_id.get(key)
                     if current is None or self._result_sort_key(result) < self._result_sort_key(current):
                         best_by_id[key] = result
+                if self._active_query_profile is not None:
+                    self._active_query_profile["variant_lookups"] += 1
+                    self._active_query_profile["variant_lookup_seconds"] += (
+                        time.perf_counter() - lookup_started
+                    )
 
             ranked = sorted(best_by_id.values(), key=self._result_sort_key)
             # All remaining variants have lower scores, so they cannot improve
@@ -519,12 +566,19 @@ class AutocompleteEngine:
         best: List[AutoCompleteData] = []
         seen_ids = set()
         for row in rows:
+            if self._active_query_profile is not None:
+                self._active_query_profile["candidate_rows"] += 1
             if row["id"] in seen_ids:
                 continue
             seen_ids.add(row["id"])
+            match_started = time.perf_counter()
             score = matcher.best_score(row["normalized"])
+            if self._active_query_profile is not None:
+                self._active_query_profile["matcher_seconds"] += time.perf_counter() - match_started
             if score is None:
                 continue
+            if self._active_query_profile is not None:
+                self._active_query_profile["accepted_rows"] += 1
             result = self._result_from_row(row, score)
             if len(best) < K:
                 best.append(result)
@@ -534,6 +588,45 @@ class AutocompleteEngine:
                 best.sort(key=self._result_sort_key)
         return best
 
+    def _print_query_profile(self, prefix: str, normalized_query: str, profile: dict) -> None:
+        """Print a compact breakdown of one online request in debug mode."""
+
+        print(
+            "[debug][query] input={0!r}, normalized={1!r}, path={2}, total={3:.6f}s".format(
+                prefix,
+                normalized_query,
+                profile["path"],
+                profile["total_seconds"],
+            )
+        )
+        print(
+            "[debug][query] normalize={0:.6f}s, exact SQL={1:.6f}s, "
+            "exact results={2}".format(
+                profile["normalize_seconds"],
+                profile["exact_seconds"],
+                profile["exact_count"],
+            )
+        )
+        if profile["candidate_rows"]:
+            print(
+                "[debug][query] candidates={0:,}, accepted={1:,}, matcher={2:.6f}s".format(
+                    profile["candidate_rows"],
+                    profile["accepted_rows"],
+                    profile["matcher_seconds"],
+                )
+            )
+        if profile["short_seconds"]:
+            print(
+                "[debug][query] short-query variants={0:,}, lookups={1:,}, rows={2:,}, "
+                "lookup time={3:.6f}s, total={4:.6f}s".format(
+                    profile["variant_count"],
+                    profile["variant_lookups"],
+                    profile["variant_rows"],
+                    profile["variant_lookup_seconds"],
+                    profile["short_seconds"],
+                )
+            )
+
     def get_best_k_completions(self, prefix: str) -> List[AutoCompleteData]:
         """Return the five highest-scoring legal autocomplete results.
 
@@ -542,26 +635,75 @@ class AutocompleteEngine:
         useful in the interactive program.
         """
 
+        total_started = time.perf_counter()
+        profile = (
+            {
+                "normalize_seconds": 0.0,
+                "exact_seconds": 0.0,
+                "exact_count": 0,
+                "candidate_rows": 0,
+                "accepted_rows": 0,
+                "matcher_seconds": 0.0,
+                "short_seconds": 0.0,
+                "variant_count": 0,
+                "variant_lookups": 0,
+                "variant_rows": 0,
+                "variant_lookup_seconds": 0.0,
+                "path": "empty",
+            }
+            if self.debug_profile
+            else None
+        )
+        normalize_started = time.perf_counter()
         normalized_query = normalize_text(prefix)
+        if profile is not None:
+            profile["normalize_seconds"] = time.perf_counter() - normalize_started
         if not normalized_query:
+            if profile is not None:
+                profile["total_seconds"] = time.perf_counter() - total_started
+                self._print_query_profile(prefix, normalized_query, profile)
             return []
 
+        exact_started = time.perf_counter()
         exact = self._exact_matches(normalized_query)
+        if profile is not None:
+            profile["exact_seconds"] = time.perf_counter() - exact_started
+            profile["exact_count"] = len(exact)
         # Exact matches have score 2 * len(query), strictly higher than every
         # one-edit match.  Five of them settle the result without further work.
         if len(exact) == K:
-            return exact
+            results = exact
+            if profile is not None:
+                profile["path"] = "exact-only"
+        elif 2 <= len(normalized_query) <= 5:
+            short_started = time.perf_counter()
+            self._active_query_profile = profile
+            try:
+                results = self._short_query_results(normalized_query, exact)
+            finally:
+                self._active_query_profile = None
+            if profile is not None:
+                profile["path"] = "short-query variants"
+                profile["short_seconds"] = time.perf_counter() - short_started
+        else:
+            matcher = OneEditMatcher(normalized_query)
+            rows = (
+                self._candidate_rows(normalized_query)
+                if len(normalized_query) >= 6
+                else self._all_rows()
+            )
+            self._active_query_profile = profile
+            try:
+                results = self._top_matches_from_rows(rows, matcher)
+            finally:
+                self._active_query_profile = None
+            if profile is not None:
+                profile["path"] = "anchor candidates" if len(normalized_query) >= 6 else "one-character fallback"
 
-        if 2 <= len(normalized_query) <= 5:
-            return self._short_query_results(normalized_query, exact)
-
-        matcher = OneEditMatcher(normalized_query)
-        rows = (
-            self._candidate_rows(normalized_query)
-            if len(normalized_query) >= 6
-            else self._all_rows()
-        )
-        return self._top_matches_from_rows(rows, matcher)
+        if profile is not None:
+            profile["total_seconds"] = time.perf_counter() - total_started
+            self._print_query_profile(prefix, normalized_query, profile)
+        return results
 
 
 _default_engine: Optional[AutocompleteEngine] = None
@@ -621,11 +763,18 @@ def main() -> None:
         action="store_true",
         help="Build and validate the offline index, then exit.",
     )
+    parser.add_argument(
+        "--debug-profile",
+        action="store_true",
+        help="Print detailed offline and per-query timing diagnostics.",
+    )
     arguments = parser.parse_args()
 
     print("Building the offline search index. This is done once per run...", flush=True)
     started_at = time.perf_counter()
-    engine = AutocompleteEngine.from_archive(arguments.archive)
+    engine = AutocompleteEngine.from_archive(
+        arguments.archive, debug_profile=arguments.debug_profile
+    )
     try:
         print(
             "Indexed {0:,} non-empty lines from {1:,} text files in {2:.1f} seconds.".format(

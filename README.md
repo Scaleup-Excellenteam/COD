@@ -22,6 +22,19 @@ are rebuilt at the start of every run.
 During the online phase, each Enter appends text to the active query. Enter `#`
 by itself to reset the query completely.
 
+## Debug profiling
+
+To find a performance bottleneck without changing search results, run:
+
+```powershell
+py autocomplete.py --debug-profile
+```
+
+The debug output separates database setup, ZIP reading/normalization/insertion,
+alphabetical-index creation, and FTS-index construction. For every Enter it
+also reports normalization time, exact-SQL time, the selected query path,
+candidate rows examined, matcher time, and total response time.
+
 ## Why queries are fast
 
 The archive contains more than three million lines. Scanning every line after
