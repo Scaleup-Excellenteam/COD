@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,10 +11,10 @@
       <header class="hero">
         <div class="hero-copy">
           <div class="brand-row"><span class="brand-dot"></span><span>Autocomplete Engine</span></div>
-          <h1>מצא את המשפט<br /><em>הנכון</em> במהירות.</h1>
-          <p>מנוע השלמה מקומי שמחפש בתוך מאגר הטקסטים ומציג עד חמש תוצאות מדורגות.</p>
-          <div class="feature-list" aria-label="יכולות המנוע">
-            <span>חיפוש מקומי</span><span>עד טעות אחת</span><span>עד 5 תוצאות</span>
+          <h1>Find the right line.<br /><em>Instantly.</em></h1>
+          <p>A local autocomplete engine that searches your text corpus and returns the best-ranked matches.</p>
+          <div class="feature-list" aria-label="Engine capabilities">
+            <span>Local engine</span><span>One typo tolerance</span><span>Top 5 matches</span>
           </div>
         </div>
         <div class="hero-visual" aria-hidden="true">
@@ -30,27 +30,27 @@
         </div>
       </header>
 
-      <section class="search-panel" aria-label="חיפוש השלמות">
-        <label for="query">מה תרצה לחפש?</label>
+      <section class="search-panel" aria-label="Autocomplete search">
+        <label for="query">What are you looking for?</label>
         <div class="search-row">
-          <input id="query" type="text" autocomplete="off" spellcheck="false" placeholder="לדוגמה: python" autofocus />
-          <button id="search-button" type="button">חיפוש</button>
+          <input id="query" type="text" autocomplete="off" spellcheck="false" placeholder="Try: python" autofocus />
+          <button id="search-button" type="button">Search</button>
         </div>
         <div class="helper-row">
-          <span><kbd>Enter</kbd> לחיפוש · אפשר לחפש גם חלק ממשפט או קלט עם טעות אחת</span>
-          <button id="reset-button" type="button" class="text-button">איפוס #</button>
+          <span><kbd>Enter</kbd> to search · phrases and one typo are supported</span>
+          <button id="reset-button" type="button" class="text-button">Reset #</button>
         </div>
       </section>
 
       <section id="result-area" class="result-area" aria-live="polite">
         <div class="empty-state">
           <div class="empty-mark">⌕</div>
-          <h2>מוכן לחיפוש</h2>
-          <p>התוצאות יופיעו כאן מיד אחרי Enter.</p>
+          <h2>Ready to search</h2>
+          <p>Your best matches will appear here after you press Enter.</p>
         </div>
       </section>
     </main>
-    <footer>פועל מקומית על המחשב שלך</footer>
+    <footer>Running locally on your computer</footer>
     <script src="app.js"></script>
   </body>
 </html>

@@ -20,7 +20,7 @@ function emptyState(title, message) {
 
 function renderResults(data) {
   if (!data.suggestions.length) {
-    emptyState("לא נמצאו השלמות", "נסה להקליד ביטוי אחר או פחות תווים.");
+    emptyState("No matches found", "Try another phrase or use fewer characters.");
     return;
   }
 
@@ -35,7 +35,7 @@ function renderResults(data) {
 
   resultArea.innerHTML = `
     <div class="results-header">
-      <h2>${data.suggestions.length} הצעות נמצאו</h2>
+      <h2>${data.suggestions.length} matching suggestions</h2>
       <span class="timing">${data.elapsed_ms} ms</span>
     </div>
     <div class="result-list">${cards}</div>`;
@@ -44,18 +44,18 @@ function renderResults(data) {
 async function search() {
   const query = queryInput.value;
   if (!query.trim()) {
-    emptyState("מוכן לחיפוש", "הקלד טקסט ולחץ Enter.");
+    emptyState("Ready to search", "Type text and press Enter.");
     return;
   }
   if (query === "#") {
     queryInput.value = "";
-    emptyState("החיפוש אופס", "אפשר להתחיל חיפוש חדש.");
+    emptyState("Search reset", "You can start a new search.");
     queryInput.focus();
     return;
   }
 
   searchButton.disabled = true;
-  searchButton.textContent = "מחפש...";
+  searchButton.textContent = "Searching...";
   try {
     const response = await fetch("/api/suggestions", {
       method: "POST",
@@ -63,13 +63,13 @@ async function search() {
       body: JSON.stringify({ query }),
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "החיפוש נכשל.");
+    if (!response.ok) throw new Error(data.error || "Search failed.");
     renderResults(data);
   } catch (error) {
     resultArea.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
   } finally {
     searchButton.disabled = false;
-    searchButton.textContent = "חיפוש";
+    searchButton.textContent = "Search";
   }
 }
 
@@ -79,6 +79,6 @@ queryInput.addEventListener("keydown", (event) => {
 searchButton.addEventListener("click", search);
 resetButton.addEventListener("click", () => {
   queryInput.value = "";
-  emptyState("החיפוש אופס", "אפשר להתחיל חיפוש חדש.");
+  emptyState("Search reset", "You can start a new search.");
   queryInput.focus();
 });
