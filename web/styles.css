@@ -59,6 +59,8 @@ kbd { padding: 2px 6px; border: 1px solid #cad5e6; border-bottom-width: 2px; bor
 .sentence { margin: 0; padding: 2px 0; font-family: Consolas, "Courier New", monospace; line-height: 1.58; font-size: 15px; direction: ltr; text-align: left; color: #1d2a41; white-space: break-spaces; tab-size: 4; overflow-wrap: anywhere; }
 .score { flex: 0 0 auto; color: #145ad6; background: #e8f1ff; border: 1px solid #d6e5ff; border-radius: 999px; padding: 6px 10px; font-size: 13px; font-weight: 800; direction: ltr; }
 .source { margin-top: 13px; color: #71809a; font-size: 13px; direction: ltr; text-align: left; overflow-wrap: anywhere; }
+.source span { color: #4a5b76; font-weight: 800; }
+.source b { padding: 0 7px; color: #9bacc6; }
 .empty-state { border: 1px dashed #c7d5e9; border-radius: 18px; padding: 54px 20px; text-align: center; color: #71809a; background: rgba(255,255,255,.55); }
 .empty-state h2 { margin: 11px 0 6px; color: #31405a; font-size: 21px; }
 .empty-state p { margin: 0; }

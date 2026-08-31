@@ -30,7 +30,7 @@ function renderResults(data) {
         <p class="sentence">${escapeHtml(item.completed_sentence)}</p>
         <span class="score">score ${item.score}</span>
       </div>
-      <div class="source">${escapeHtml(item.source_text)}:${item.offset}</div>
+      <div class="source"><span>File name:</span> ${escapeHtml(item.source_text)} <b>·</b> <span>Line:</span> ${item.offset}</div>
     </article>`).join("");
 
   resultArea.innerHTML = `
