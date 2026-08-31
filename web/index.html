@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Autocomplete</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero">
+        <div class="brand-row"><span class="brand-dot"></span><span>Autocomplete Engine</span></div>
+        <h1>מצא משפט מתוך מאגר הטקסטים</h1>
+        <p>הקלד טקסט ולחץ Enter לקבלת עד חמש השלמות מדורגות.</p>
+      </header>
+
+      <section class="search-panel" aria-label="חיפוש השלמות">
+        <label for="query">מה תרצה לחפש?</label>
+        <div class="search-row">
+          <input id="query" type="text" autocomplete="off" spellcheck="false" placeholder="לדוגמה: python" autofocus />
+          <button id="search-button" type="button">חיפוש</button>
+        </div>
+        <div class="helper-row">
+          <span>אפשר לחפש גם חלק ממשפט או קלט עם טעות אחת.</span>
+          <button id="reset-button" type="button" class="text-button">איפוס #</button>
+        </div>
+      </section>
+
+      <section id="result-area" class="result-area" aria-live="polite">
+        <div class="empty-state">
+          <div class="empty-mark">⌕</div>
+          <h2>מוכן לחיפוש</h2>
+          <p>התוצאות יופיעו כאן מיד אחרי Enter.</p>
+        </div>
+      </section>
+    </main>
+    <footer>פועל מקומית על המחשב שלך</footer>
+    <script src="app.js"></script>
+  </body>
+</html>
