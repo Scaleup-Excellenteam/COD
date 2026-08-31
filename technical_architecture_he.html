@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Autocomplete — ארכיטקטורה טכנית</title>
+  <style>
+    :root { --ink:#172b4d; --blue:#0052cc; --navy:#123d70; --cyan:#e9f2ff; --mint:#e7f7ef; --orange:#f5a623; --line:#c8d7eb; --muted:#5f6c85; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#dfe8f2; color:var(--ink); font:14px/1.48 Arial,"Noto Sans Hebrew",sans-serif; }
+    .page { width:210mm; min-height:297mm; margin:10mm auto; padding:15mm 16mm 14mm; background:white; position:relative; overflow:hidden; page-break-after:always; box-shadow:0 5px 24px #7894b544; }
+    .page:last-child { page-break-after:auto; }
+    h1 { font-size:31px; line-height:1.16; margin:7mm 0 4mm; } h2 { font-size:22px; margin:0 0 4mm; color:#103e7a; } h3 { font-size:16px; margin:0 0 2mm; color:var(--blue); }
+    p { margin:0 0 8px; } .eyebrow { color:var(--blue); font-weight:bold; letter-spacing:.4px; } .sub { color:var(--muted); font-size:17px; max-width:670px; }
+    .rule { height:5px; width:90px; border-radius:6px; background:var(--orange); margin:6mm 0 8mm; } .page-no { position:absolute; bottom:8mm; left:16mm; color:var(--muted); font-size:11px; }
+    .grid { display:grid; gap:10px; } .two { grid-template-columns:1fr 1fr; } .three { grid-template-columns:repeat(3,1fr); }
+    .box { border:1px solid var(--line); border-radius:11px; padding:11px 12px; background:#fff; } .blue { background:var(--cyan); } .mint { background:var(--mint); } .warn { background:#fff8e6; border-color:#ebcf83; }
+    .flow { display:flex; align-items:stretch; gap:7px; margin:6mm 0; } .node { flex:1; padding:10px 7px; border:2px solid #a8c6e6; background:#f8fbff; border-radius:10px; text-align:center; font-weight:bold; } .node.dark { background:var(--navy); border-color:var(--navy); color:white; } .node.green { background:#effaf4; border-color:#9ed8b7; color:#09643a; } .arrow { color:var(--blue); align-self:center; font-size:24px; font-weight:bold; }
+    .vertical { flex-direction:column; align-items:center; } .vertical .node { width:77%; flex:none; } .down { transform:rotate(-90deg); line-height:.7; }
+    code, pre { direction:ltr; unicode-bidi:embed; font-family:Consolas,"Courier New",monospace; } code { padding:1px 4px; border-radius:4px; background:#eef3f9; color:#173e70; } pre { margin:5px 0; padding:10px; border-radius:8px; background:#102a43; color:#e8f2ff; font-size:12px; line-height:1.42; white-space:pre-wrap; }
+    table { width:100%; border-collapse:collapse; margin:4mm 0; font-size:12.5px; } th { background:var(--navy); color:white; } th,td { padding:7px; border:1px solid var(--line); text-align:right; vertical-align:top; } tr:nth-child(even) td { background:#f7fbff; }
+    ul,ol { margin:4px 0; padding-right:19px; } li { margin:3px 0; } .small { color:var(--muted); font-size:12px; } .metric { color:#103e7a; font-size:25px; font-weight:bold; } .badge { display:inline-block; background:#eaf3ff; color:#174b89; font-weight:bold; border-radius:99px; padding:3px 9px; margin:2px 0 2px 4px; }
+    @media print { body { background:white; } .page { margin:0; box-shadow:none; } }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <div class="eyebrow">ENGINEERING OVERVIEW · Google Autocomplete Part A</div>
+    <h1>מנוע השלמה אוטומטית:<br>ארכיטקטורה, אינדקס וחיפוש סלחני לטעות אחת</h1>
+    <div class="rule"></div>
+    <p class="sub">מסמך טכני להצגת מנגנון החיפוש: מודל הנתונים, האינדקס ההפוך, בחירת מועמדים, חישוב ציון והאיזון בין זמן אתחול לזמן תגובה.</p>
+    <div class="grid three" style="margin-top:10mm">
+      <div class="box blue"><div class="metric">2,392,247</div><div class="small">שורות לא־ריקות באינדקס</div></div>
+      <div class="box mint"><div class="metric">1,504</div><div class="small">קובצי מקור ב־ZIP</div></div>
+      <div class="box warn"><div class="metric">Top 5</div><div class="small">תוצאות מדורגות לכל שאילתה</div></div>
+    </div>
+    <h2 style="margin-top:9mm">מבט־על</h2>
+    <div class="flow"><div class="node dark">Archive.zip<br><span class="small" style="color:#d7e8ff">Corpus</span></div><div class="arrow">←</div><div class="node">ETL: קריאה + נרמול</div><div class="arrow">←</div><div class="node green">SQLite<br>Sentences + FTS5</div><div class="arrow">←</div><div class="node">API<br><code>get_best_k_completions</code></div></div>
+    <h3>עקרון התכנון</h3>
+    <p>אין סריקה של כל שורות הקורפוס בכל Enter. שלב ה־Offline בונה אינדקס הפוך זמני; שלב ה־Online משתמש בו כדי לאתר רק מועמדים אפשריים, ואז מאמת את כללי המטלה במדויק בפייתון.</p>
+    <div class="box warn" style="margin-top:7mm"><strong>הפרדה מכוונת:</strong> SQLite/FTS אחראי על <em>recall</em> — לא לפספס מועמדים; מנוע ה־Python אחראי על <em>precision</em> — לאשר התאמה, לבחור את התיקון הטוב ביותר ולחשב score.</div>
+    <div class="page-no">1 / 4</div>
+  </section>
+
+  <section class="page">
+    <div class="eyebrow">OFFLINE PIPELINE · Data model</div>
+    <h2>איך הקורפוס הופך למנוע חיפוש</h2>
+    <div class="flow vertical"><div class="node dark">מעבר רקורסיבי על קבצי <code>.txt</code> בתוך ZIP</div><div class="arrow down">←</div><div class="node">פענוח UTF-8 עם <code>errors=&quot;ignore&quot;</code><br><span class="small">תווי בקרה לא תקינים מוסרים</span></div><div class="arrow down">←</div><div class="node">כל שורה → רשומת משפט<br><span class="small">offset נשאר מספר השורה המקורי</span></div><div class="arrow down">←</div><div class="node green">Bulk insert ל־SQLite + בניית FTS5</div></div>
+    <h3>סכמת הנתונים</h3>
+    <pre>sentences
+id                  INTEGER PRIMARY KEY
+normalized          TEXT NOT NULL
+completed_sentence  TEXT NOT NULL
+source_text         TEXT NOT NULL
+offset              INTEGER NOT NULL
+
+sentence_search     FTS5 external-content index
+  indexes: normalized
+  references: sentences.id</pre>
+    <div class="grid two"><div class="box blue"><h3>למה שני טקסטים?</h3><p><code>normalized</code> מיועד להשוואה; <code>completed_sentence</code> הוא שורת המקור שמוחזרת למשתמש, כולל פיסוק.</p></div><div class="box mint"><h3>למה external content?</h3><p>הטקסט המלא נשמר פעם אחת בטבלת <code>sentences</code>. FTS שומר את מבנה החיפוש ומפנה ל־row id, במקום לשכפל שדות פלט.</p></div></div>
+    <h3 style="margin-top:7mm">נרמול</h3>
+    <pre>"Python,    assuming Python!"  →  "python assuming python"</pre>
+    <p>האלגוריתם מבצע <code>casefold</code>, משאיר אותיות/ספרות, מאחד רצפי whitespace לרווח אחד, ומסיר פיסוק. רווחים עדיין נספרים כתווים לצורך score.</p>
+    <div class="page-no">2 / 4</div>
+  </section>
+
+  <section class="page">
+    <div class="eyebrow">INDEX · Query plan</div>
+    <h2>איך “המילון” עובד בפועל?</h2>
+    <p>המילון אינו <code>dict</code> ענק בפייתון. הוא אינדקס הפוך של SQLite FTS5 עם tokenizer מסוג <strong>trigram</strong>.</p>
+    <pre>normalized sentence:  "python autocomplete"
+trigrams:             "pyt"  "yth"  "tho"  "hon"  ...
+inverted index:       pyt → [row 18, row 902, ...]
+                      yth → [row 18, row 311, ...]</pre>
+    <p>חיפוש של קטע ארוך אינו מתחיל ב־2.39 מיליון משפטים; הוא מתחיל ברשימת ה־row ids שמכילים קטע מתאים.</p>
+    <h3>נתיב החיפוש לפי אורך הקלט</h3>
+    <table><thead><tr><th>אורך קלט מנורמל</th><th>אסטרטגיה</th><th>למה היא בטוחה?</th></tr></thead><tbody>
+      <tr><td>התאמה מדויקת</td><td>FTS phrase query, החזרת 5 ראשונות לפי סדר אלפביתי</td><td>התאמות מלאות תמיד עדיפות על טעות אחת.</td></tr>
+      <tr><td>6 תווים ומעלה</td><td>שני anchors לא־חופפים: מההתחלה ומהסוף</td><td>טעות יחידה יכולה לפגוע לכל היותר באחד מהם; השני נשאר תקין.</td></tr>
+      <tr><td>2–5 תווים</td><td>יצירה ישירה של כל הווריאציות החוקיות במרחק עריכה 1</td><td>כל תיקון אפשרי נבדק ישירות באינדקס; אין מסנן שעלול לפספס תוצאה.</td></tr>
+      <tr><td>תו יחיד</td><td>fallback רק אם אין 5 התאמות מדויקות</td><td>לקלט כזה יש מעט מאוד מידע סלקטיבי.</td></tr>
+    </tbody></table>
+    <h3>דוגמה: <code>2o be</code></h3>
+    <div class="flow"><div class="node">וריאציות חוקיות<br><span class="small"><code>to be</code>, <code>2o b</code>, ...</span></div><div class="arrow">←</div><div class="node green">FTS exact lookup<br><span class="small">לכל וריאציה</span></div><div class="arrow">←</div><div class="node dark">מיזוג לפי score<br>ו־Top 5</div></div>
+    <div class="box warn"><strong>אופטימיזציית עצירה:</strong> הווריאציות מעובדות לפי score יורד. לאחר שנמצאו 5 תוצאות בקבוצת ציון, וריאציות בעלות ציון נמוך יותר כבר אינן יכולות לשנות את ה־Top 5.</div>
+    <div class="page-no">3 / 4</div>
+  </section>
+
+  <section class="page">
+    <div class="eyebrow">VALIDATION · Ranking · Performance</div>
+    <h2>אימות מדויק, ניקוד ויעילות</h2>
+    <h3>בדיקת מועמד ארוך</h3>
+    <p>אחרי שהאינדקס מצא מועמד, <code>OneEditMatcher</code> בודק במפורש החלפה, מחיקה מהקלט והוספה לקלט. הוא מחזיר את הציון החוקי הגבוה ביותר לאותו משפט.</p>
+    <pre>exact       score = 2 × |query|
+substitute  score = 2 × (|query|-1) - substitution_penalty(position)
+delete      score = 2 × (|query|-1) - insert_delete_penalty(position)
+insert      score = 2 × |query|     - insert_delete_penalty(position)</pre>
+    <div class="grid two"><div class="box blue"><h3>דירוג</h3><ol><li><code>score</code> יורד</li><li>משפט לפי סדר אלפביתי</li><li>נתיב ומספר שורה לשבירת שוויון דטרמיניסטית</li></ol></div><div class="box mint"><h3>זיכרון ו־I/O</h3><ul><li>לא נוצרים מיליוני אובייקטי Python קבועים.</li><li>ה־DB זמני ונמחק בסגירה.</li><li>הקורפוס נקרא פעם אחת בלבד בכל ריצה.</li></ul></div></div>
+    <h3 style="margin-top:7mm">תוצאות מדודות על הקורפוס המלא</h3>
+    <table><thead><tr><th>פעולה</th><th>תוצאה</th><th>פירוש</th></tr></thead><tbody>
+      <tr><td>בניית Offline index</td><td>כ־73 שניות</td><td>עלות חד־פעמית בתחילת הריצה.</td></tr>
+      <tr><td><code>python</code></td><td>0.045 שנ׳</td><td>exact substring דרך FTS.</td></tr>
+      <tr><td><code>pythom</code></td><td>0.286 שנ׳</td><td>טעות אחת, anchors + matcher.</td></tr>
+      <tr><td><code>data analysiz</code></td><td>0.205 שנ׳</td><td>טעות במשפט ארוך.</td></tr>
+      <tr><td><code>2o be</code></td><td>0.187 שנ׳</td><td>מסלול short-query ללא סריקת corpus.</td></tr>
+    </tbody></table>
+    <h3>בדיקות הגנה</h3>
+    <p><span class="badge">16/16 unit tests</span><span class="badge">ניקוד בכל מיקום</span><span class="badge">שתי טעויות נדחות</span><span class="badge">נרמול</span><span class="badge"># reset</span></p>
+    <div class="box warn" style="margin-top:6mm"><strong>סיכום הנדסי:</strong> פתרון היברידי — FTS5 מספק candidate retrieval מהיר, והקוד בפייתון נשאר source of truth לכללי ההתאמה והציון. כך הביצועים טובים בלי לוותר על דטרמיניזם ונכונות.</div>
+    <div class="page-no">4 / 4</div>
+  </section>
+</body>
+</html>
