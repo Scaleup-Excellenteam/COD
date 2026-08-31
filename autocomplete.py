@@ -25,6 +25,11 @@ NORMALIZED_CORPUS_ALPHABET = string.ascii_lowercase + string.digits + " "
 INDEX_FORMAT_VERSION = 1
 
 
+COLOR_BLUE = "\033[94m"
+COLOR_GREEN = "\033[92m"
+COLOR_RESET = "\033[0m"
+
+
 @dataclass(frozen=True)
 class AutoCompleteData:
     """One result returned by ``get_best_k_completions``.
@@ -41,13 +46,10 @@ class AutoCompleteData:
 
     def format_for_cli(self, number: int) -> str:
         return (
-            "{0}. {1} ({2}:{3}, score={4})".format(
-                number,
-                self.completed_sentence,
-                self.source_text,
-                self.offset,
-                self.score,
-            )
+            f"{COLOR_GREEN}{number}.{COLOR_RESET} {self.completed_sentence} "
+            f"({COLOR_GREEN}File Path = {COLOR_RESET}{self.source_text}, "
+            f"{COLOR_GREEN}Line = {COLOR_RESET}{self.offset}, "
+            f"{COLOR_GREEN}Score = {COLOR_RESET}{self.score})"
         )
 
 
@@ -698,26 +700,27 @@ def run_cli(engine: AutocompleteEngine) -> None:
     """Run the required online phase, appending input until '#' resets it."""
 
     query = ""
-    print("The Format:\n")
+    print(f"{COLOR_GREEN}The Format:\n")
     print("Current text []: INPUT")
     print("Here are 5 suggestions:")
-    print("1. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
-    print("2. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
-    print("3. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
-    print("4. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
-    print("5. SOURCE_SENTENCE, (FILE_PATH, SCORE)")
-    print("Current text [INPUT]:")
-    print("-" * 80)
-    print("The system is ready!\n")
+    print("1. SOURCE_SENTENCE, (File Path = FILE_PATH, Line = LINE, Score = SCORE)")
+    print("2. SOURCE_SENTENCE, (File Path = FILE_PATH, Line = LINE, Score = SCORE)")
+    print("3. SOURCE_SENTENCE, (File Path = FILE_PATH, Line = LINE, Score = SCORE)")
+    print("4. SOURCE_SENTENCE, (File Path = FILE_PATH, Line = LINE, Score = SCORE)")
+    print("5. SOURCE_SENTENCE, (File Path = FILE_PATH, Line = LINE, Score = SCORE)")
+    print(f"Current text [INPUT]:{COLOR_RESET}")
+    print(f"{COLOR_BLUE}{'-' * 140}{COLOR_RESET}")
+    print(f"{COLOR_BLUE}The system is ready!\n")
     print("-  Type text and press 'Enter'.")
     print("-  Type # to clear the current query. ")
-    print("-  Press Ctrl+C to exit.\n")
+    print(f"-  Press Ctrl+C to exit.\n{COLOR_RESET}")
     try:
         while True:
             addition = input("Current text [{0}]: ".format(query))
             if addition == "#":
                 query = ""
                 print("The current query was reset.")
+                print(f"{COLOR_BLUE}{'-' * 140}{COLOR_RESET}")
                 continue
 
             query += addition
@@ -725,7 +728,7 @@ def run_cli(engine: AutocompleteEngine) -> None:
             print("Here are {0} suggestions:".format(len(suggestions)))
             for number, suggestion in enumerate(suggestions, start=1):
                 print(suggestion.format_for_cli(number))
-            print()
+            print(f"{COLOR_BLUE}{'-' * 140}{COLOR_RESET}")
     except (EOFError, KeyboardInterrupt):
         print("\nGoodbye.")
 
@@ -735,7 +738,7 @@ def main() -> None:
     parser.add_argument(
         "--archive",
         type=Path,
-        default=Path("Archive (2).zip"),
+        default=Path("Archive.zip"),
         help="Path to the ZIP archive containing .txt files.",
     )
     parser.add_argument(
@@ -764,8 +767,8 @@ def main() -> None:
     if arguments.temporary_index and arguments.rebuild_index:
         parser.error("--temporary-index cannot be combined with --rebuild-index.")
 
-    print("\nBuilding the offline search index...", flush=True)
-    print("-" * 80)
+    print(f"\n{COLOR_BLUE}Building the offline search index...{COLOR_RESET}", flush=True)
+    print(f"{COLOR_BLUE}{'-' * 140}{COLOR_RESET}")
     started_at = time.perf_counter()
     engine = AutocompleteEngine.from_archive(
         arguments.archive,
@@ -786,7 +789,7 @@ def main() -> None:
                 time.perf_counter() - started_at,
             )
         )
-        print("-" * 80)
+        print(f"{COLOR_BLUE}{'-' * 140}{COLOR_RESET}")
         if not arguments.build_only:
             run_cli(engine)
     finally:
