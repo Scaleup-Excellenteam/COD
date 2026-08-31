@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>הסבר פרויקט — השלמה אוטומטית</title>
+  <style>
+    :root {
+      --navy: #14345a;
+      --blue: #246eb9;
+      --sky: #eaf4ff;
+      --mint: #e4f7ee;
+      --green: #18794e;
+      --orange: #f59e0b;
+      --ink: #1d2939;
+      --muted: #5b677a;
+      --line: #c9d8e8;
+      --paper: #fff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #dce7f0;
+      color: var(--ink);
+      font-family: Arial, "Noto Sans Hebrew", sans-serif;
+      font-size: 15.5px;
+      line-height: 1.55;
+    }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 16mm 17mm 14mm;
+      margin: 10mm auto;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+      box-shadow: 0 4px 22px rgba(31, 60, 88, .15);
+    }
+    .page:last-child { page-break-after: auto; }
+    .page-number {
+      position: absolute;
+      bottom: 8mm;
+      left: 17mm;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { color: var(--navy); font-size: 34px; line-height: 1.2; margin: 8mm 0 5mm; }
+    h2 { color: var(--navy); font-size: 24px; margin: 0 0 4mm; }
+    h3 { color: var(--blue); font-size: 17px; margin: 0 0 2mm; }
+    .eyebrow { color: var(--blue); font-weight: 700; letter-spacing: .4px; }
+    .subtitle { color: var(--muted); font-size: 18px; max-width: 620px; }
+    .accent-line { width: 86px; height: 5px; background: var(--orange); border-radius: 99px; margin: 7mm 0; }
+    .hero {
+      padding: 9mm;
+      margin: 11mm 0 8mm;
+      border-radius: 18px;
+      color: white;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+    }
+    .hero strong { color: #ffdd91; }
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      margin: 2px 0 2px 5px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: var(--sky);
+      color: var(--navy);
+    }
+    .grid { display: grid; gap: 10px; }
+    .grid.two { grid-template-columns: 1fr 1fr; }
+    .card {
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+    }
+    .card.sky { background: var(--sky); border-color: #bdd8f4; }
+    .card.mint { background: var(--mint); border-color: #b5e2ca; }
+    .note {
+      padding: 10px 13px;
+      border-right: 5px solid var(--orange);
+      border-radius: 8px;
+      background: #fff8e8;
+    }
+    .flow {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 8px;
+      margin: 7mm 0;
+    }
+    .flow.vertical { flex-direction: column; align-items: center; }
+    .node {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 9px;
+      border: 2px solid #a8c7e6;
+      border-radius: 12px;
+      background: #f8fbff;
+      text-align: center;
+      font-weight: 700;
+    }
+    .node.green { border-color: #99d5b7; background: #f1fbf5; color: #12613d; }
+    .node.orange { border-color: #f4c664; background: #fffaed; color: #8a5700; }
+    .node.dark { border-color: var(--navy); background: var(--navy); color: white; }
+    .arrow { align-self: center; color: var(--blue); font-size: 27px; font-weight: 700; }
+    .arrow.down { line-height: .7; transform: rotate(-90deg); }
+    .simple-list { padding: 0 20px 0 0; margin: 4px 0; }
+    .simple-list li { margin: 4px 0; }
+    code {
+      direction: ltr;
+      unicode-bidi: embed;
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 5px;
+      background: #eef2f7;
+      color: #173f69;
+      font-family: Consolas, monospace;
+      font-size: .9em;
+    }
+    .example {
+      margin: 6mm 0;
+      padding: 13px 15px;
+      border-radius: 12px;
+      background: #f7fafc;
+      border: 1px dashed #a8c7e6;
+    }
+    .example .typed { color: var(--blue); font-weight: 700; }
+    .example .result { color: var(--green); font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; margin: 4mm 0; font-size: 13px; }
+    th { background: var(--navy); color: white; }
+    th, td { border: 1px solid var(--line); padding: 7px; text-align: right; }
+    tr:nth-child(even) td { background: #f7fbff; }
+    .score { color: var(--green); font-weight: 700; }
+    .small { font-size: 13px; color: var(--muted); }
+    .metric { font-size: 26px; color: var(--navy); font-weight: 700; line-height: 1.1; }
+    .metric-label { color: var(--muted); font-size: 13px; }
+    @media print {
+      body { background: white; }
+      .page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="page">
+    <div class="eyebrow">פרויקט גוגל · שלב א׳</div>
+    <h1>מנוע השלמה אוטומטית<br>שמבין גם טעויות קטנות</h1>
+    <div class="accent-line"></div>
+    <p class="subtitle">מסמך הצגה פשוט: מה התוכנה עושה, איך היא בנויה, ואיך היא מחזירה תוצאות מהירות מתוך מיליוני שורות טקסט.</p>
+
+    <div class="hero">
+      <h2 style="color:white">הרעיון במשפט אחד</h2>
+      <p>המשתמש כותב חלק ממשפט. התוכנה מחפשת משפטים מתאימים במאגר, גם אם נפלה <strong>טעות אחת</strong>, ומחזירה את חמש התוצאות בעלות הציון הטוב ביותר.</p>
+    </div>
+
+    <div class="grid two">
+      <div class="card sky">
+        <h3>מה נכנס?</h3>
+        <p>טקסט שהמשתמש הקליד, למשל: <code>pythom</code> או <code>data analysiz</code>.</p>
+      </div>
+      <div class="card mint">
+        <h3>מה יוצא?</h3>
+        <p>עד 5 משפטים מקוריים, עם נתיב קובץ, מספר שורה וציון התאמה.</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <div><span class="typed">המשתמש הקליד:</span> <code>to pe</code></div>
+      <div style="margin-top:5px"><span class="result">המערכת מזהה:</span> <code>to be</code> — החלפה אחת של <code>p</code> ב־<code>b</code>.</div>
+    </div>
+
+    <h2>מה חשוב במטלה?</h2>
+    <p>
+      <span class="pill">התאמה כתת־מחרוזת</span>
+      <span class="pill">עד טעות אחת</span>
+      <span class="pill">ציון מדויק</span>
+      <span class="pill">5 תוצאות</span>
+      <span class="pill">מהירות</span>
+    </p>
+    <div class="note">המשפט שמוחזר נשאר בדיוק כפי שנכתב בקובץ המקורי, כולל סימני הפיסוק. ההתעלמות מפיסוק ורישיות מתבצעת רק בזמן החיפוש.</div>
+    <div class="page-number">1 מתוך 4</div>
+  </section>
+
+  <section class="page">
+    <div class="eyebrow">שלב 1 · Offline</div>
+    <h2>לפני שהמשתמש מחפש: מכינים את המאגר</h2>
+    <p>כדי לא לקרוא מחדש מיליוני שורות בכל לחיצה על Enter, התוכנה מבצעת הכנה חד־פעמית בתחילת הריצה.</p>
+
+    <div class="flow">
+      <div class="node dark">Archive.zip<br><span class="small" style="color:#d9eaff">1,504 קבצי טקסט</span></div>
+      <div class="arrow">←</div>
+      <div class="node">קריאת כל שורה<br><span class="small">כל שורה היא משפט</span></div>
+      <div class="arrow">←</div>
+      <div class="node green">אינדקס חיפוש<br><span class="small">SQLite FTS5</span></div>
+    </div>
+
+    <h3>מה נשמר לכל משפט?</h3>
+    <div class="grid two">
+      <div class="card">
+        <strong>הגרסה המקורית</strong><br>
+        <span class="small">מוצגת למשתמש בסוף, כולל פיסוק.</span><br>
+        <code>Python, assuming Python</code>
+      </div>
+      <div class="card">
+        <strong>גרסת חיפוש מנורמלת</strong><br>
+        <span class="small">ללא פיסוק, ללא הבדל בין אותיות גדולות/קטנות.</span><br>
+        <code>python assuming python</code>
+      </div>
+    </div>
+
+    <div class="flow" style="margin-top:10mm">
+      <div class="node">משפט מקורי</div>
+      <div class="arrow">←</div>
+      <div class="node orange">נרמול</div>
+      <div class="arrow">←</div>
+      <div class="node">חלקי טקסט באורך 3</div>
+      <div class="arrow">←</div>
+      <div class="node green">אינדקס</div>
+    </div>
+
+    <h3>מהו נרמול?</h3>
+    <ul class="simple-list">
+      <li>מתעלמים מהבדל בין <code>Python</code> ל־<code>python</code>.</li>
+      <li>מסירים פיסוק: <code>be, that</code> נחשב כמו <code>be that</code>.</li>
+      <li>מאחדים מספר רווחים לרווח אחד.</li>
+      <li>מתעלמים מתווי בקרה לא תקינים שמופיעים לפעמים בקובצי תיעוד.</li>
+    </ul>
+
+    <div class="note">האינדקס הוא כמו תוכן עניינים מהיר: במקום לפתוח את כל הקבצים בכל חיפוש, הוא יודע מיד אילו שורות עשויות להכיל קטע טקסט רלוונטי.</div>
+    <div class="page-number">2 מתוך 4</div>
+  </section>
+
+  <section class="page">
+    <div class="eyebrow">שלב 2 · Online</div>
+    <h2>מה קורה כשמשתמש לוחץ Enter?</h2>
+
+    <div class="flow vertical">
+      <div class="node dark" style="width:75%">קלט משתמש: <code>data analysiz</code></div>
+      <div class="arrow down">←</div>
+      <div class="node orange" style="width:75%">נרמול הקלט</div>
+      <div class="arrow down">←</div>
+      <div class="node" style="width:75%">שליפת מועמדים מהאינדקס</div>
+      <div class="arrow down">←</div>
+      <div class="node green" style="width:75%">בדיקה מדויקת, ניקוד ומיון</div>
+      <div class="arrow down">←</div>
+      <div class="node dark" style="width:75%">5 ההשלמות הטובות ביותר</div>
+    </div>
+
+    <h3>איך האינדקס מצמצם את החיפוש?</h3>
+    <p>בקלט רגיל וארוך, התוכנה לוקחת חלק מההתחלה וחלק מהסוף של הקלט. אם קיימת טעות אחת, לפחות אחד משני החלקים נשאר תקין ולכן מוצא את המשפט המתאים.</p>
+    <div class="example">
+      <div><span class="typed">קלט עם טעות:</span> <code>pythom</code></div>
+      <div><span class="result">משפט אפשרי:</span> <code>pythonm...</code></div>
+      <div class="small" style="margin-top:5px">החלק התקין מההתחלה מאפשר להגיע למועמדים המתאימים; אחר כך הבדיקה המדויקת מזהה את סוג הטעות.</div>
+    </div>
+
+    <h3>שלושת סוגי התיקון</h3>
+    <table>
+      <thead><tr><th>סוג</th><th>דוגמה</th><th>מה התוכנה עושה?</th></tr></thead>
+      <tbody>
+        <tr><td>החלפת תו</td><td><code>to pe</code> → <code>to be</code></td><td>בודקת אם תו אחד שונה.</td></tr>
+        <tr><td>תו עודף</td><td><code>or knot</code> → <code>or not</code></td><td>בודקת אם מחיקת תו אחד מהקלט עוזרת.</td></tr>
+        <tr><td>תו חסר</td><td><code>or nt</code> → <code>or not</code></td><td>בודקת אם הוספת תו אחד לקלט עוזרת.</td></tr>
+      </tbody>
+    </table>
+
+    <p>בקלט קצר מאוד התוכנה יוצרת את כל התיקונים החוקיים האפשריים ומחפשת אותם ישירות באינדקס. כך היא לא נאלצת לסרוק את כל הקורפוס בגלל שגיאת הקלדה קטנה.</p>
+    <div class="page-number">3 מתוך 4</div>
+  </section>
+
+  <section class="page">
+    <div class="eyebrow">ניקוד, בדיקות וביצועים</div>
+    <h2>איך בוחרים את 5 התוצאות הטובות?</h2>
+    <p>לכל משפט מתאים מחושב ציון. התאמה מלאה מקבלת יותר נקודות; טעות אחת מורידה נקודות לפי סוג הטעות והמיקום שלה בקלט.</p>
+
+    <table>
+      <thead><tr><th>מצב</th><th>רעיון הציון</th><th>דוגמה</th></tr></thead>
+      <tbody>
+        <tr><td>התאמה מלאה</td><td class="score">2 נקודות לכל תו תואם</td><td><code>to be</code> → 10 נק׳</td></tr>
+        <tr><td>החלפה</td><td>מורידים קנס; בתחילת הקלט הקנס גבוה יותר</td><td><code>2o be</code> → 3 נק׳ מול <code>to be</code></td></tr>
+        <tr><td>תו חסר / עודף</td><td>קנס גבוה יותר מהחלפה</td><td><code>or nt</code> → 8 נק׳ מול <code>or not</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid two" style="margin-top:7mm">
+      <div class="card sky">
+        <div class="metric">16/16</div>
+        <div class="metric-label">בדיקות אוטומטיות שעברו</div>
+        <p class="small" style="margin-top:7px">נרמול, ניקוד, מיון, שתי טעויות, נתיב/שורה, וקלט <code>#</code>.</p>
+      </div>
+      <div class="card mint">
+        <div class="metric">0.19 שנ׳</div>
+        <div class="metric-label">חיפוש <code>2o be</code> אחרי האתחול</div>
+        <p class="small" style="margin-top:7px">לפני האופטימיזציה אותה שאילתה לקחה 14.6 שניות.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:8mm">תוצאות ביצועים אמיתיות</h3>
+    <table>
+      <thead><tr><th>שאילתה</th><th>מה בודקים?</th><th>זמן</th></tr></thead>
+      <tbody>
+        <tr><td><code>python</code></td><td>התאמה מדויקת</td><td>0.045 שנ׳</td></tr>
+        <tr><td><code>PYTHON,,,</code></td><td>רישיות ופיסוק</td><td>0.012 שנ׳</td></tr>
+        <tr><td><code>pythom</code></td><td>טעות אחת</td><td>0.286 שנ׳</td></tr>
+        <tr><td><code>data analysiz</code></td><td>טעות במשפט ארוך</td><td>0.205 שנ׳</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">לסיכום: התוכנה משלבת שני דברים — אינדקס מהיר שמוצא איפה כדאי לחפש, ובודק מדויק שמוודא שהמשפט והציון באמת עומדים בכללי המטלה.</div>
+    <p style="margin-top:7mm; color:var(--navy); font-weight:700">בהצגה אפשר לסיים במשפט: “אנחנו לא מקריבים נכונות בשביל מהירות — אנחנו משתמשים באינדקס כדי לבדוק בדיוק רק את מה שרלוונטי.”</p>
+    <div class="page-number">4 מתוך 4</div>
+  </section>
+
+</body>
+</html>
