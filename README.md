@@ -45,6 +45,45 @@ only, and typed search text is never sent to an external service. Press `Ctrl+C`
 in the terminal to stop it. Use `--rebuild-index` to refresh its index, or
 `--port 8080` to select another local port.
 
+## Zero-downtime indexing (adding a data source live)
+
+The offline build and the online server are decoupled through the
+filesystem, so a new or updated data source can be indexed and published
+while the server keeps answering requests -- no restart, no dropped
+suggestions.
+
+1. Build and activate a new snapshot from an archive. Each run writes into
+   its own versioned directory under `--snapshots-dir` and only then
+   atomically flips a `CURRENT` pointer file to it:
+
+   ```powershell
+   py build_snapshot.py --archive "Archive (2).zip" --snapshots-dir snapshots
+   ```
+
+2. Run the web server in snapshot mode, pointed at the same directory:
+
+   ```powershell
+   py web_app.py --snapshots-dir snapshots
+   ```
+
+   On a background thread it polls `CURRENT` every `--poll-interval-seconds`
+   (default 2s). While the server is running, add a new data source by
+   building another snapshot from a new or updated archive (step 1 again,
+   pointed at the same `--snapshots-dir`) -- locally, or copied in remotely
+   by whatever means already gets a new archive onto the machine. As soon as
+   the build finishes and validates, the watcher notices the pointer moved,
+   loads the new snapshot into memory, and atomically swaps the engine the
+   server queries. In-flight requests finish against the snapshot they
+   started with; every request after the swap sees the new one.
+
+   A failed or half-finished build never affects the running service: the
+   `CURRENT` pointer only ever moves after a build fully succeeds, so a bad
+   archive just leaves the previous, good snapshot serving.
+
+Manual index upload from the browser (`--index`, no `--snapshots-dir`) is
+still available for a single fixed archive, but is disabled while running in
+snapshot mode -- see `build_snapshot.py` instead.
+
 ### Voice typing and Hebrew translation
 
 In a browser that supports the Web Speech API (commonly Chrome or Edge), select

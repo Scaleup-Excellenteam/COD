@@ -5,3 +5,7 @@ logs/
 
 # The supplied corpus is input data, not source code for the debug version.
 Archive (2).zip
+
+# Offline-built, versioned snapshots and the CURRENT pointer (see
+# snapshot_store.py / build_snapshot.py): generated output, not source.
+snapshots/

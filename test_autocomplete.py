@@ -6,6 +6,7 @@ Run with: py -m unittest -v
 from pathlib import Path
 from contextlib import redirect_stdout
 from io import StringIO
+import sqlite3
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -235,6 +236,32 @@ class AutocompleteSpecificationTests(unittest.TestCase):
             self.assertTrue(loaded_engine.get_best_k_completions("to be"))
         finally:
             loaded_engine.close()
+
+    def test_open_snapshot_loads_a_prebuilt_index_without_needing_an_archive(self) -> None:
+        """The online zero-downtime loader must not require the source archive.
+
+        A snapshot's own metadata is a self-contained description of what it
+        indexes, so the server can load it purely from its filesystem path --
+        it never needs to see (or revalidate against) the archive that built
+        it, which may not even be present on the machine serving requests.
+        """
+
+        index_path = Path(self.temporary_directory.name) / "snapshot" / "index.sqlite3"
+        building_engine = AutocompleteEngine.from_archive(self.archive_path, index_path=index_path)
+        building_engine.close()
+
+        snapshot_engine = AutocompleteEngine.open_snapshot(index_path)
+        try:
+            self.assertEqual(snapshot_engine.index_status, "loaded")
+            self.assertGreater(snapshot_engine.indexed_sentence_count, 0)
+            self.assertTrue(snapshot_engine.get_best_k_completions("to be"))
+        finally:
+            snapshot_engine.close()
+
+    def test_open_snapshot_rejects_a_missing_index_file(self) -> None:
+        missing_path = Path(self.temporary_directory.name) / "does-not-exist" / "index.sqlite3"
+        with self.assertRaises(sqlite3.OperationalError):
+            AutocompleteEngine.open_snapshot(missing_path)
 
     def test_persistent_index_rebuilds_when_archive_changes(self) -> None:
         index_path = Path(self.temporary_directory.name) / "saved-index.sqlite3"

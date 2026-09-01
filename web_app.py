@@ -15,19 +15,116 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 import sqlite3
+import threading
 import time
-from typing import Any
+from typing import Any, Optional
 import tempfile
 import uuid
 import webbrowser
 
 from autocomplete import AutocompleteEngine
+from snapshot_store import read_current_snapshot, snapshot_index_path
 
 
 WEB_DIRECTORY = Path(__file__).with_name("web")
 MAX_QUERY_LENGTH = 2_000
 MAX_TRANSLATION_TEXT_LENGTH = 500
 MAX_INDEX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024
+DEFAULT_POLL_INTERVAL_SECONDS = 2.0
+
+
+def _activate_engine(
+    server: HTTPServer, new_engine: AutocompleteEngine, active_name: str, engine_lock: threading.Lock
+) -> None:
+    """Atomically swap the serving engine, then close the retired one.
+
+    The reference swap happens while holding ``engine_lock`` -- the same lock
+    a request holds for its entire query -- so a request already in flight
+    against the old engine always finishes before the old engine is closed.
+    No request ever sees a torn state, and none are dropped.
+    """
+
+    with engine_lock:
+        old_engine: AutocompleteEngine = getattr(server, "engine")
+        setattr(server, "engine", new_engine)
+        setattr(server, "active_index_name", active_name)
+    old_engine.close()
+
+
+def _is_manual_upload_allowed(server: HTTPServer) -> bool:
+    """Manual browser upload only makes sense against a single fixed index.
+
+    In snapshot mode there is no single "the archive" a manually uploaded
+    index could be validated against -- snapshots are versioned and may come
+    from different data sources over time -- so that path is disabled in
+    favor of the ``build_snapshot.py`` -> pointer -> watcher hand-off.
+    """
+
+    return getattr(server, "snapshots_dir", None) is None
+
+
+class SnapshotWatcher:
+    """Poll the snapshot pointer in the background and hot-swap the serving engine.
+
+    Offline builds land in their own versioned directory under
+    ``snapshots_dir`` and only flip the ``CURRENT`` pointer once a build is
+    complete and validated (see ``snapshot_store.build_and_activate_snapshot``).
+    This watcher notices that the pointer changed, loads the new snapshot
+    into memory on its own background thread, and atomically swaps the
+    engine the server queries. Because the load happens off the
+    request-handling thread and the swap is a single locked reference
+    assignment, adding a data source never requires stopping the service.
+    """
+
+    def __init__(
+        self,
+        server: HTTPServer,
+        snapshots_dir: Path,
+        engine_lock: threading.Lock,
+        poll_interval_seconds: float = DEFAULT_POLL_INTERVAL_SECONDS,
+    ) -> None:
+        self._server = server
+        self._snapshots_dir = Path(snapshots_dir)
+        self._engine_lock = engine_lock
+        self._poll_interval_seconds = poll_interval_seconds
+        self._stop_event = threading.Event()
+        self._thread = threading.Thread(target=self._run, name="snapshot-watcher", daemon=True)
+
+    def start(self) -> None:
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop_event.set()
+        if self._thread.is_alive():
+            self._thread.join(timeout=self._poll_interval_seconds + 5)
+
+    def _run(self) -> None:
+        while not self._stop_event.is_set():
+            self.poll_once()
+            self._stop_event.wait(self._poll_interval_seconds)
+
+    def poll_once(self) -> bool:
+        """Activate the pointed-to snapshot if it changed. Returns whether it swapped."""
+
+        try:
+            version_id = read_current_snapshot(self._snapshots_dir)
+        except OSError:
+            return False
+        if version_id is None or version_id == getattr(self._server, "active_index_name", None):
+            return False
+
+        index_path = snapshot_index_path(self._snapshots_dir, version_id)
+        try:
+            new_engine = AutocompleteEngine.open_snapshot(index_path)
+        except (OSError, RuntimeError, ValueError, sqlite3.DatabaseError):
+            # The pointer names a snapshot that is missing, still being
+            # written, or corrupt. Keep serving the current snapshot and try
+            # again on the next poll -- a bad or half-finished build must
+            # never take a live service down.
+            return False
+
+        _activate_engine(self._server, new_engine, version_id, self._engine_lock)
+        return True
 
 
 class AutocompleteWebHandler(BaseHTTPRequestHandler):
@@ -74,8 +171,13 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
             return
 
         started_at = time.perf_counter()
-        engine: AutocompleteEngine = getattr(self.server, "engine")
-        suggestions, diagnostics = engine.search_with_diagnostics(query)
+        engine_lock: threading.Lock = getattr(self.server, "engine_lock")
+        # Held for the whole query, not just the reference read: this is what
+        # lets the zero-downtime watcher swap and retire an old snapshot
+        # without ever closing it out from under a request already using it.
+        with engine_lock:
+            engine: AutocompleteEngine = getattr(self.server, "engine")
+            suggestions, diagnostics = engine.search_with_diagnostics(query)
         elapsed_ms = (time.perf_counter() - started_at) * 1_000
         diagnostic_payload = diagnostics.as_dict()
         diagnostic_payload.update(
@@ -135,7 +237,28 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
         return text
 
     def _replace_index_from_upload(self) -> None:
-        """Accept an index upload only when it matches the active archive."""
+        """Accept an index upload only when it matches the active archive.
+
+        Disabled in snapshot mode: see ``_is_manual_upload_allowed``. That
+        mode's zero-downtime watcher thread is the only thing besides a
+        request that ever touches ``self.server.engine`` outside this
+        request-handling thread, and this codepath predates -- and does not
+        take -- the shared ``engine_lock``, so the two must stay mutually
+        exclusive.
+        """
+
+        if not _is_manual_upload_allowed(self.server):
+            self._send_json(
+                {
+                    "error": (
+                        "Manual index upload is disabled while running in snapshot mode. "
+                        "Build a new snapshot with build_snapshot.py instead; the running "
+                        "service picks it up automatically."
+                    )
+                },
+                HTTPStatus.BAD_REQUEST,
+            )
+            return
 
         try:
             content_length = int(self.headers.get("Content-Length", "0"))
@@ -231,6 +354,22 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
 
+def _load_initial_snapshot_engine(snapshots_dir: Path) -> tuple[AutocompleteEngine, str]:
+    """Load whatever snapshot CURRENT names at startup, in zero-downtime mode."""
+
+    version_id = read_current_snapshot(snapshots_dir)
+    if version_id is None:
+        raise SystemExit(
+            "No snapshot is activated under {0}. Run build_snapshot.py first, e.g.:\n"
+            "  py build_snapshot.py --archive \"Archive (2).zip\" --snapshots-dir {0}".format(
+                snapshots_dir
+            )
+        )
+    index_path = snapshot_index_path(snapshots_dir, version_id)
+    engine = AutocompleteEngine.open_snapshot(index_path)
+    return engine, version_id
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Local web UI for autocomplete.py")
     parser.add_argument("--archive", type=Path, default=Path("Archive (2).zip"))
@@ -239,6 +378,22 @@ def main() -> None:
     parser.add_argument("--rebuild-index", action="store_true")
     parser.add_argument("--log-dir", type=Path, default=Path("logs"))
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument(
+        "--snapshots-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Run in zero-downtime mode: serve whichever snapshot CURRENT names under this "
+            "directory, and hot-swap live whenever build_snapshot.py activates a new one. "
+            "Overrides --index and --rebuild-index."
+        ),
+    )
+    parser.add_argument(
+        "--poll-interval-seconds",
+        type=float,
+        default=DEFAULT_POLL_INTERVAL_SECONDS,
+        help="How often to check for a newly activated snapshot in --snapshots-dir mode.",
+    )
     parser.add_argument(
         "--install-hebrew-translation-model",
         action="store_true",
@@ -256,25 +411,47 @@ def main() -> None:
 
     print("Preparing autocomplete index...", flush=True)
     started_at = time.perf_counter()
-    engine = AutocompleteEngine.from_archive(
-        arguments.archive, index_path=arguments.index, rebuild_index=arguments.rebuild_index
-    )
-    print(
-        "{0}: {1:,} lines ready in {2:.1f}s.".format(
-            engine.index_status.capitalize(),
-            engine.indexed_sentence_count,
-            time.perf_counter() - started_at,
+    watcher: Optional[SnapshotWatcher] = None
+    if arguments.snapshots_dir is not None:
+        engine, active_index_name = _load_initial_snapshot_engine(arguments.snapshots_dir)
+        print(
+            "Loaded snapshot {0}: {1:,} lines ready in {2:.1f}s. Watching {3} for updates.".format(
+                active_index_name,
+                engine.indexed_sentence_count,
+                time.perf_counter() - started_at,
+                arguments.snapshots_dir,
+            )
         )
-    )
+    else:
+        engine = AutocompleteEngine.from_archive(
+            arguments.archive, index_path=arguments.index, rebuild_index=arguments.rebuild_index
+        )
+        active_index_name = arguments.index.name
+        print(
+            "{0}: {1:,} lines ready in {2:.1f}s.".format(
+                engine.index_status.capitalize(),
+                engine.indexed_sentence_count,
+                time.perf_counter() - started_at,
+            )
+        )
 
     address = ("127.0.0.1", arguments.port)
     server = HTTPServer(address, AutocompleteWebHandler)
     setattr(server, "engine", engine)
+    setattr(server, "engine_lock", threading.Lock())
     setattr(server, "persistent_index_path", arguments.index.resolve())
-    setattr(server, "active_index_name", arguments.index.name)
+    setattr(server, "active_index_name", active_index_name)
+    setattr(server, "snapshots_dir", arguments.snapshots_dir)
     server_upload_directory = tempfile.TemporaryDirectory(prefix="autocomplete-upload-")
     setattr(server, "upload_directory", Path(server_upload_directory.name))
     setattr(server, "log_directory", arguments.log_dir)
+
+    if arguments.snapshots_dir is not None:
+        watcher = SnapshotWatcher(
+            server, arguments.snapshots_dir, getattr(server, "engine_lock"), arguments.poll_interval_seconds
+        )
+        watcher.start()
+
     url = "http://{0}:{1}".format(*address)
     print("Open {0} — press Ctrl+C to stop.".format(url))
     if not arguments.no_browser:
@@ -284,6 +461,8 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\nStopping web UI.")
     finally:
+        if watcher is not None:
+            watcher.stop()
         server.server_close()
         getattr(server, "engine").close()
         server_upload_directory.cleanup()

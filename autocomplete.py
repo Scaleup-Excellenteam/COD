@@ -266,11 +266,14 @@ class AutocompleteEngine:
 
     def __init__(
         self,
-        archive_path: Path,
+        archive_path: Optional[Path] = None,
         index_path: Optional[Path] = None,
         rebuild_index: bool = False,
     ) -> None:
-        self.archive_path = Path(archive_path)
+        # ``archive_path`` is unset only for a snapshot opened directly by
+        # version id (see ``open_snapshot``): that load path never rereads
+        # or revalidates against a source archive.
+        self.archive_path = Path(archive_path) if archive_path is not None else None
         self._temporary_directory: Optional[tempfile.TemporaryDirectory[str]] = None
         if index_path is None:
             self._temporary_directory = tempfile.TemporaryDirectory(prefix="autocomplete-")
@@ -328,7 +331,11 @@ class AutocompleteEngine:
             self.index_status = "rebuilt"
 
         self._database_path.parent.mkdir(parents=True, exist_ok=True)
-        connection = sqlite3.connect(str(self._database_path))
+        # check_same_thread=False: an engine built here may later be handed
+        # off to a service and closed from a different thread once the
+        # zero-downtime watcher swaps in a newer snapshot (see
+        # ``_open_persistent_connection``).
+        connection = sqlite3.connect(str(self._database_path), check_same_thread=False)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA journal_mode = OFF")
         connection.execute("PRAGMA synchronous = OFF")
@@ -444,10 +451,22 @@ class AutocompleteEngine:
         )
         connection.commit()
 
-    def _load_existing_index(self) -> None:
-        """Open a compatible persistent index without rereading the ZIP archive."""
+    @staticmethod
+    def _open_persistent_connection(index_path: Path) -> Tuple[sqlite3.Connection, sqlite3.Row]:
+        """Open a persistent index file and return it with its metadata row.
 
-        connection = sqlite3.connect(str(self._database_path))
+        This only confirms the file is a complete, compatible index (right
+        format version, FTS table present); it does not check the index
+        against any particular archive, since a snapshot loaded for online
+        serving may have been built on a different machine than the one
+        reading it. Connections use ``check_same_thread=False`` because the
+        zero-downtime watcher opens a new snapshot's connection on a
+        background thread and later closes a previous one from that same
+        background thread, while queries against the *active* engine always
+        run on the request-handling thread.
+        """
+
+        connection = sqlite3.connect(str(index_path), check_same_thread=False)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA temp_store = MEMORY")
         connection.execute("PRAGMA cache_size = -131072")
@@ -460,15 +479,26 @@ class AutocompleteEngine:
             ).fetchone()
             if metadata is None:
                 raise ValueError("The index has no metadata.")
+            if metadata["format_version"] != INDEX_FORMAT_VERSION:
+                raise ValueError("The index format is not supported.")
+            # Confirm that the FTS table is present before accepting the cache.
+            connection.execute("SELECT rowid FROM sentence_search LIMIT 1").fetchone()
+        except Exception:
+            connection.close()
+            raise
+        return connection, metadata
+
+    def _load_existing_index(self) -> None:
+        """Open a compatible persistent index without rereading the ZIP archive."""
+
+        connection, metadata = self._open_persistent_connection(self._database_path)
+        try:
             archive_stat = self.archive_path.stat()
             if (
-                metadata["format_version"] != INDEX_FORMAT_VERSION
-                or metadata["archive_size"] != archive_stat.st_size
+                metadata["archive_size"] != archive_stat.st_size
                 or metadata["archive_mtime_ns"] != archive_stat.st_mtime_ns
             ):
                 raise ValueError("The index does not match the current archive.")
-            # Confirm that the FTS table is present before accepting the cache.
-            connection.execute("SELECT rowid FROM sentence_search LIMIT 1").fetchone()
         except Exception:
             connection.close()
             raise
@@ -979,6 +1009,25 @@ class AutocompleteEngine:
         except Exception:
             engine.close()
             raise
+        return engine
+
+    @classmethod
+    def open_snapshot(cls, index_path: Path) -> "AutocompleteEngine":
+        """Load one already-built, versioned snapshot for online serving.
+
+        Unlike :meth:`from_existing_index`, this never requires or checks a
+        live source archive -- a snapshot's own metadata fully describes the
+        corpus it indexes. This is the load path used by the zero-downtime
+        watcher in ``web_app.py``: it is only ever handed a path produced by
+        ``snapshot_store.build_snapshot``, so no archive comparison applies.
+        """
+
+        engine = cls(archive_path=None, index_path=index_path)
+        connection, metadata = cls._open_persistent_connection(Path(index_path))
+        engine.file_count = metadata["file_count"]
+        engine.indexed_sentence_count = metadata["sentence_count"]
+        engine._connection = connection
+        engine.index_status = "loaded"
         return engine
 
 
