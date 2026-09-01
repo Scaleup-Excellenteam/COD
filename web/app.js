@@ -41,6 +41,34 @@ function voiceErrorMessage(error) {
   return messages[error] || "Voice typing stopped unexpectedly. Try again.";
 }
 
+function selectedVoiceLanguage() {
+  const preferredLanguages = navigator.languages || [navigator.language || "en-US"];
+  return preferredLanguages.some((language) => language.toLowerCase().startsWith("he"))
+    ? "he-IL"
+    : "en-US";
+}
+
+function containsHebrew(text) {
+  return /[\u0590-\u05ff]/u.test(text);
+}
+
+async function translateHebrewToEnglish(text) {
+  const response = await fetch("/api/translate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Hebrew translation failed.");
+  return data.translated_text;
+}
+
+function finishVoiceInput(transcript) {
+  queryInput.value = `${queryBeforeVoiceInput}${transcript}`.trimStart();
+  setVoiceStatus("");
+  search();
+}
+
 function setupVoiceTyping() {
   if (!SpeechRecognition) {
     voiceButton.hidden = true;
@@ -48,7 +76,6 @@ function setupVoiceTyping() {
   }
 
   recognition = new SpeechRecognition();
-  recognition.lang = navigator.language || "en-US";
   recognition.continuous = false;
   recognition.interimResults = true;
   recognition.maxAlternatives = 1;
@@ -77,12 +104,10 @@ function setupVoiceTyping() {
   };
 
   recognition.onend = () => {
-    const hasTranscript = Boolean(finalTranscript.trim());
+    const transcript = finalTranscript.trim();
     setListening(false);
-    if (hasTranscript) {
-      queryInput.value = `${queryBeforeVoiceInput}${finalTranscript}`.trimStart();
-      setVoiceStatus("");
-      search();
+    if (transcript) {
+      finishVoiceInput(transcript);
     } else if (!voiceStatus.textContent) {
       setVoiceStatus("Voice typing stopped.");
     }
@@ -96,6 +121,7 @@ function setupVoiceTyping() {
     }
     queryBeforeVoiceInput = queryInput.value.trim() ? `${queryInput.value.trim()} ` : "";
     finalTranscript = "";
+    recognition.lang = selectedVoiceLanguage();
     try {
       recognition.start();
     } catch (_error) {
@@ -217,7 +243,7 @@ function renderCorrectionTrace(trace) {
 }
 
 async function search() {
-  const query = queryInput.value;
+  let query = queryInput.value;
   if (!query.trim()) {
     emptyState("Ready to search", "Type text and press Enter.");
     return;
@@ -232,6 +258,12 @@ async function search() {
   searchButton.disabled = true;
   searchButton.textContent = "Searching...";
   try {
+    if (containsHebrew(query)) {
+      setVoiceStatus("Translating Hebrew to English…");
+      query = await translateHebrewToEnglish(query);
+      queryInput.value = query;
+      setVoiceStatus("");
+    }
     const response = await fetch("/api/suggestions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

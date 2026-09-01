@@ -45,17 +45,27 @@ only, and typed search text is never sent to an external service. Press `Ctrl+C`
 in the terminal to stop it. Use `--rebuild-index` to refresh its index, or
 `--port 8080` to select another local port.
 
-### Voice typing
+### Voice typing and Hebrew translation
 
 In a browser that supports the Web Speech API (commonly Chrome or Edge), select
 **Voice** beside the search field, allow microphone access, and speak a search
 phrase. Interim text appears in the field, and one local search runs after the
 browser returns a final transcript. It uses no API key or server dependency.
 
+When typed text or a voice transcript is Hebrew, the local server translates it
+to English before searching. Voice recognition automatically uses Hebrew when it
+is one of the browser's preferred languages, and English otherwise. The
+translation model is a one-time download and uses no cloud translation API:
+
+```powershell
+py -m pip install -r requirements.txt
+py web_app.py --install-hebrew-translation-model
+```
+
 Speech recognition is supplied by the browser, not by this local Python server.
 Depending on the browser and its configuration, audio may be processed by that
-browser's speech service. Users requiring guaranteed offline transcription
-should use a local model such as Vosk instead.
+browser's speech service. The Argos Hebrew-to-English translation step itself
+runs locally after installation.
 
 ## Why queries are fast
 

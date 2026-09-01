@@ -26,6 +26,7 @@ from autocomplete import AutocompleteEngine
 
 WEB_DIRECTORY = Path(__file__).with_name("web")
 MAX_QUERY_LENGTH = 2_000
+MAX_TRANSLATION_TEXT_LENGTH = 500
 MAX_INDEX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024
 
 
@@ -55,18 +56,15 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
         if self.path == "/api/index":
             self._replace_index_from_upload()
             return
+        if self.path == "/api/translate":
+            self._translate_hebrew_to_english()
+            return
         if self.path != "/api/suggestions":
             self.send_error(HTTPStatus.NOT_FOUND)
             return
 
         try:
-            content_length = int(self.headers.get("Content-Length", "0"))
-            if content_length > MAX_QUERY_LENGTH * 4:
-                raise ValueError("The request is too large.")
-            payload = json.loads(self.rfile.read(content_length).decode("utf-8"))
-            query = payload.get("query", "")
-            if not isinstance(query, str) or len(query) > MAX_QUERY_LENGTH:
-                raise ValueError("query must be a short string.")
+            query = self._read_short_text("query", MAX_QUERY_LENGTH)
         except (UnicodeDecodeError, ValueError, json.JSONDecodeError) as error:
             self._send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)
             return
@@ -106,6 +104,35 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
                 "reset": False,
             }
         )
+
+    def _translate_hebrew_to_english(self) -> None:
+        """Translate a short voice transcript without exposing a cloud API."""
+
+        try:
+            transcript = self._read_short_text("text", MAX_TRANSLATION_TEXT_LENGTH)
+            from translation import TranslationUnavailable, translate_hebrew_to_english
+
+            translated_text = translate_hebrew_to_english(transcript)
+        except TranslationUnavailable as error:
+            self._send_json({"error": str(error)}, HTTPStatus.SERVICE_UNAVAILABLE)
+            return
+        except (UnicodeDecodeError, ValueError, json.JSONDecodeError, RuntimeError) as error:
+            self._send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)
+            return
+
+        self._send_json({"translated_text": translated_text})
+
+    def _read_short_text(self, field_name: str, maximum_length: int) -> str:
+        """Read a bounded JSON string field from a request body."""
+
+        content_length = int(self.headers.get("Content-Length", "0"))
+        if content_length <= 0 or content_length > maximum_length * 4:
+            raise ValueError("The request is too large.")
+        payload = json.loads(self.rfile.read(content_length).decode("utf-8"))
+        text = payload.get(field_name, "")
+        if not isinstance(text, str) or not text.strip() or len(text) > maximum_length:
+            raise ValueError("{0} must be a short, non-empty string.".format(field_name))
+        return text
 
     def _replace_index_from_upload(self) -> None:
         """Accept an index upload only when it matches the active archive."""
@@ -212,7 +239,20 @@ def main() -> None:
     parser.add_argument("--rebuild-index", action="store_true")
     parser.add_argument("--log-dir", type=Path, default=Path("logs"))
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument(
+        "--install-hebrew-translation-model",
+        action="store_true",
+        help="download the one-time local Hebrew-to-English translation model, then exit",
+    )
     arguments = parser.parse_args()
+
+    if arguments.install_hebrew_translation_model:
+        from translation import install_hebrew_to_english_model
+
+        print("Installing the local Hebrew-to-English translation model...", flush=True)
+        install_hebrew_to_english_model()
+        print("Hebrew-to-English translation is ready.")
+        return
 
     print("Preparing autocomplete index...", flush=True)
     started_at = time.perf_counter()
