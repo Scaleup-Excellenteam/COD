@@ -88,7 +88,7 @@ The test suite covers normalization, the official substitution/deletion/
 insertion scoring examples, original source/line reporting, alphabetical tie
 breaking, and empty input.
 
-## Semantic embeddings: Earth-side preparation
+## Semantic embeddings: Earth-side preparation and query search
 
 Gemini is used only by offline/pre-deployment tooling on Earth. Part A remains
 fully local and usable without Gemini.
@@ -151,7 +151,7 @@ This creates an exact FAISS `IndexFlatIP` containing L2-normalized `float32`
 vectors and a positionally aligned metadata JSONL without embedding vectors.
 Both deployment artifacts are also ignored by Git.
 
-The complete architecture is:
+The completed architecture is:
 
 ```text
 EARTH — offline
@@ -164,12 +164,12 @@ Corpus
 → upload deployment artifacts
 
 
-GROUND — future online
+GROUND — online
 
 User query
-→ optional Gemini query embedding
-→ original text + 768D vector
-→ satellite
+→ Gemini query embedding
+→ 768D vector
+→ local demonstration boundary
 
 
 SATELLITE — local runtime
@@ -196,16 +196,49 @@ engine = SemanticSearchEngine.from_files(
 results = engine.search(query_embedding)
 ```
 
-FAISS search runs entirely locally on the satellite; Gemini never runs there
-and no API key or network access is required. Corpus and query embeddings must
-use compatible Gemini embedding configuration (currently
-`gemini-embedding-2`, 768 dimensions). Part A remains independent and retains
-its own matching and score. A semantic result contains `sentence`,
-`source_text`, `offset`, and a cosine `semantic_score`, which is distinct from
-the Part A score.
+## Completed Earth / Ground / Satellite flow
 
-Ground-side query embedding, the admin toggle, networking, and UI integration
-remain future work and are not part of the local semantic runtime.
+```text
+EARTH OFFLINE
+Corpus -> Gemini document embeddings -> FAISS deployment artifact
+
+GROUND ONLINE
+User query -> Gemini query embedding -> 768D vector
+
+SATELLITE ONLINE
+768D vector -> local FAISS cosine search -> Semantic Top 5
+```
+
+The local demo makes that boundary explicit while running both sides in one
+process; it does not implement networking:
+
+```powershell
+python -m semantic.semantic_query "how do computers learn?"
+```
+
+Ground sends exactly one `gemini-embedding-2` query request at 768 dimensions.
+Embedding 2 retrieval inputs are compatible: corpus records use
+`title: none | text: …`, while queries use `task: search result | query: …`.
+The original query text is preserved and vectors are never displayed.
+
+FAISS search runs entirely locally on the satellite: it makes zero Gemini calls
+and needs neither a Gemini key nor network access. Corpus sentence, source,
+and offset are real preserved dataset values. A semantic result contains
+`sentence`, `source_text`, `offset`, and cosine `semantic_score`; it is never
+combined with Part A's independent character/edit-match score.
+
+Evaluate a deliberate paraphrased query against real deployment artifacts:
+
+```powershell
+python -m semantic.evaluate_semantic "the file for chapter one" `
+    --expected-sentence "ch01.qxd" `
+    --expected-idea "chapter one document file"
+```
+
+The evaluator prints the query, expected corpus idea, local Top-5 results,
+rank of the expected sentence, and its semantic score. Automated tests mock
+Gemini and consume no quota. Networking, an admin toggle, web UI integration,
+and classic-plus-semantic result combination remain future work.
 
 ## Benchmark against the supplied corpus
 
