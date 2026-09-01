@@ -10,11 +10,7 @@
     <main class="page-shell">
       <header class="hero">
         <div class="hero-copy">
-          <h1>Find the right line.<br /><em>Instantly.</em></h1>
-          <p>A local autocomplete engine that searches your text corpus and returns the best-ranked matches.</p>
-          <div class="feature-list" aria-label="Engine capabilities">
-            <span>Local engine</span><span>One typo tolerance</span><span>Top 5 matches</span>
-          </div>
+          <h1>Autocomplete Engine</h1>
         </div>
         <div class="hero-visual" aria-hidden="true">
           <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
@@ -36,9 +32,19 @@
           <button id="search-button" type="button">Search</button>
         </div>
         <div class="helper-row">
-          <span><kbd>Enter</kbd> to search · phrases and one typo are supported</span>
-          <button id="reset-button" type="button" class="text-button">Reset #</button>
+          <button id="reset-button" type="button" class="text-button">Reset</button>
         </div>
+        <div class="engine-tools">
+          <label class="diagnostics-toggle" for="diagnostics-toggle">
+            <input id="diagnostics-toggle" type="checkbox" />
+            <span>Record measured diagnostics</span>
+          </label>
+          <label class="upload-button" for="index-file">
+            <span>Upload existing index</span>
+            <input id="index-file" type="file" accept=".sqlite3,application/vnd.sqlite3" />
+          </label>
+        </div>
+        <p id="index-message" class="index-message">Current index: startup index.</p>
       </section>
 
       <section id="result-area" class="result-area" aria-live="polite">
@@ -47,6 +53,16 @@
           <h2>Ready to search</h2>
           <p>Your best matches will appear here after you press Enter.</p>
         </div>
+      </section>
+      <section id="diagnostics-panel" class="diagnostics-panel" hidden aria-labelledby="diagnostics-title">
+        <div class="diagnostics-heading">
+          <div>
+            <p class="eyebrow">MEASURED SEARCH STORY</p>
+            <h2 id="diagnostics-title">How this search was resolved</h2>
+          </div>
+          <span>Saved to <code>logs/search.jsonl</code></span>
+        </div>
+        <div id="diagnostics-values" class="diagnostics-values"></div>
       </section>
     </main>
     <footer>Running locally on your computer</footer>

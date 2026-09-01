@@ -84,6 +84,23 @@ class AutocompleteSpecificationTests(unittest.TestCase):
         self.assertEqual(result.completed_sentence, "Something useful happens here.")
         self.assertEqual(result.score, 29)
 
+    def test_diagnostics_are_collected_from_the_same_search(self) -> None:
+        results, diagnostics = self.engine.search_with_diagnostics("xomething useful")
+
+        self.assertTrue(results)
+        self.assertEqual(diagnostics.normalized_query, "xomething useful")
+        self.assertEqual(diagnostics.search_path, "trigram-anchors")
+        self.assertGreater(diagnostics.candidate_row_count, 0)
+        self.assertEqual(diagnostics.result_count, len(results))
+        self.assertGreaterEqual(diagnostics.total_ms, diagnostics.direct_lookup_ms)
+        self.assertTrue(diagnostics.correction_details)
+        explanation = diagnostics.correction_details[0]
+        self.assertEqual(explanation["operation"], "replace")
+        self.assertEqual(explanation["from_character"], "x")
+        self.assertEqual(explanation["to_character"], "s")
+        self.assertEqual(explanation["matched_text"], "something useful")
+        self.assertEqual(explanation["score"], results[0].score)
+
     def test_substitution_penalty_at_every_position(self) -> None:
         target = "abcdefghij"
         penalties = [5, 4, 3, 2, 1, 1, 1, 1, 1, 1]
