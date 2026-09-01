@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 *.sqlite3
 .env
+data/semantic_dataset.jsonl
 
 # The supplied corpus is input data, not source code for the debug version.
 Archive (2).zip

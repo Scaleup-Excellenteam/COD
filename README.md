@@ -88,6 +88,29 @@ The test suite covers normalization, the official substitution/deletion/
 insertion scoring examples, original source/line reporting, alphabetical tie
 breaking, and empty input.
 
+## Semantic dataset preparation
+
+Create a local environment file:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Set the Gemini API key in `.env`:
+
+```text
+GEMINI_API_KEY=<my-key>
+```
+
+Build an initial 10,000-row dataset from the existing SQLite index:
+
+```powershell
+py -m semantic.build_dataset --index index.sqlite3 --limit 10000
+```
+
+The output is `data/semantic_dataset.jsonl`. Dataset generation reads only the
+local SQLite index and does **not** contact Gemini.
+
 ## Benchmark against the supplied corpus
 
 ```powershell
