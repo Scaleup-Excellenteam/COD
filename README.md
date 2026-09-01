@@ -88,7 +88,10 @@ The test suite covers normalization, the official substitution/deletion/
 insertion scoring examples, original source/line reporting, alphabetical tie
 breaking, and empty input.
 
-## Semantic dataset preparation
+## Semantic embeddings: Earth-side preparation
+
+Gemini is used only by offline/pre-deployment tooling on Earth. Part A remains
+fully local and usable without Gemini.
 
 Create a local environment file:
 
@@ -110,6 +113,50 @@ py -m semantic.build_dataset --index index.sqlite3 --limit 10000
 
 The output is `data/semantic_dataset.jsonl`. Dataset generation reads only the
 local SQLite index and does **not** contact Gemini.
+
+Create a tiny corpus-embedding sample:
+
+```powershell
+py -m semantic.build_embeddings --limit 3
+```
+
+This reads the first three dataset records and writes
+`data/semantic_embeddings.jsonl`, preserving each original sentence, source
+file, and physical line offset while adding a 768-dimensional vector. In V1,
+one sentence makes one Gemini request; there is no batching or retry behavior.
+
+Embedding selection is intentionally explicit:
+
+```powershell
+# Safe experiment: embed only the first N records.
+py -m semantic.build_embeddings --limit 3
+
+# Deliberate full-dataset run: may consume substantial Gemini quota.
+py -m semantic.build_embeddings --all
+```
+
+Exactly one of `--limit` or `--all` is required, so the complete corpus cannot
+be embedded accidentally. Both generated JSONL files are local artifacts and
+are ignored by Git.
+
+The planned architecture is:
+
+```text
+EARTH (offline)
+corpus -> semantic dataset -> Gemini corpus embeddings -> deployment artifact
+
+GROUND (future runtime)
+query -> optional Gemini query embedding -> text + vector sent to satellite
+
+SATELLITE (future runtime)
+text         -> Part A
+query vector -> local semantic index -> Semantic Top 5
+```
+
+The generated corpus embeddings are intended to become a future satellite
+deployment artifact. Gemini does not run on the satellite. Ground query
+embedding, satellite semantic indexing, and Semantic Top 5 retrieval are not
+implemented yet.
 
 ## Benchmark against the supplied corpus
 
