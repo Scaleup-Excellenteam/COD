@@ -4,8 +4,10 @@ from contextlib import redirect_stderr
 from io import StringIO
 from pathlib import Path
 import json
+import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from google.genai import types
 
@@ -194,6 +196,36 @@ class EmbeddingBuilderTests(unittest.TestCase):
         self.assertNotIn("title: none | text:", output[0]["sentence"])
         self.assertIn("Selected records: 2", progress.getvalue())
         self.assertIn("Embedding: 2 / 2", progress.getvalue())
+
+    def test_all_writes_every_record_with_exact_keys_and_no_api_key(self) -> None:
+        arguments = create_parser().parse_args(["--all"])
+        client = SequenceClient()
+        api_key = "phase-3-secret-sentinel"
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": api_key}):
+            count = build_embeddings(
+                self.input_path,
+                self.output_path,
+                limit=arguments.limit,
+                client_factory=lambda: client,
+                progress_stream=StringIO(),
+            )
+
+        output = self.read_output()
+        self.assertTrue(arguments.all)
+        self.assertEqual(count, len(self.records))
+        self.assertEqual(len(client.models.calls), len(self.records))
+        self.assertEqual(
+            [record["id"] for record in output],
+            [record["id"] for record in self.records],
+        )
+        for record in output:
+            self.assertEqual(
+                set(record),
+                {"id", "sentence", "source_text", "offset", "embedding"},
+            )
+            self.assertEqual(len(record["embedding"]), 768)
+        self.assertNotIn(api_key, self.output_path.read_text(encoding="utf-8"))
 
     def test_preflight_failure_happens_before_client_creation(self) -> None:
         self.input_path.write_text(
