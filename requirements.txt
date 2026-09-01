@@ -1,1 +1,2 @@
 google-genai==2.21.0
+faiss-cpu==1.15.0

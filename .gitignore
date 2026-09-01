@@ -4,6 +4,8 @@ __pycache__/
 .env
 data/semantic_dataset.jsonl
 data/semantic_embeddings.jsonl
+data/semantic.faiss
+data/semantic_metadata.jsonl
 
 # The supplied corpus is input data, not source code for the debug version.
 Archive (2).zip
