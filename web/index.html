@@ -8,23 +8,9 @@
   </head>
   <body>
     <main class="page-shell">
-      <header class="hero">
-        <div class="hero-copy">
-          <h1>Autocomplete Engine</h1>
-        </div>
-        <div class="hero-visual" aria-hidden="true">
-          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-          <div class="visual-card">
-            <span class="visual-label">QUERY</span>
-            <strong>python</strong>
-            <div class="visual-line"></div>
-            <div class="visual-result"><span></span><i></i><i></i><i></i></div>
-            <div class="visual-result"><span></span><i></i><i></i><i></i></div>
-            <div class="visual-result"><span></span><i></i><i></i><i></i></div>
-          </div>
-        </div>
+      <header class="admin-header">
+        <h1>Admin console</h1>
       </header>
-
       <section class="search-panel" aria-label="Autocomplete search">
         <label for="query">What are you looking for?</label>
         <div class="search-row">
@@ -35,34 +21,27 @@
           <button id="reset-button" type="button" class="text-button">Reset</button>
         </div>
         <div class="engine-tools">
-          <label class="diagnostics-toggle" for="diagnostics-toggle">
-            <input id="diagnostics-toggle" type="checkbox" />
-            <span>Record measured diagnostics</span>
-          </label>
           <label class="upload-button" for="index-file">
-            <span>Upload existing index</span>
+            <span>Upload index</span>
             <input id="index-file" type="file" accept=".sqlite3,application/vnd.sqlite3" />
           </label>
         </div>
-        <p id="index-message" class="index-message">Current index: startup index.</p>
+        <p id="index-message" class="index-message">Active index: loading…</p>
       </section>
 
       <section id="result-area" class="result-area" aria-live="polite">
         <div class="empty-state">
           <div class="empty-mark">⌕</div>
-          <h2>Ready to search</h2>
-          <p>Your best matches will appear here after you press Enter.</p>
         </div>
       </section>
       <section id="diagnostics-panel" class="diagnostics-panel" hidden aria-labelledby="diagnostics-title">
         <div class="diagnostics-heading">
           <div>
-            <p class="eyebrow">TECHNICAL VIEW</p>
-            <h2 id="diagnostics-title">Measured search diagnostics</h2>
+            <h2 id="diagnostics-title">Logs</h2>
           </div>
           <span>Saved to <code>logs/search.jsonl</code></span>
         </div>
-        <dl id="diagnostics-values" class="diagnostics-values"></dl>
+        <ol id="diagnostics-values" class="diagnostics-values"></ol>
       </section>
     </main>
     <footer>Running locally on your computer</footer>

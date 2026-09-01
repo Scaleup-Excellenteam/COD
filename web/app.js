@@ -2,7 +2,6 @@ const queryInput = document.querySelector("#query");
 const searchButton = document.querySelector("#search-button");
 const resetButton = document.querySelector("#reset-button");
 const resultArea = document.querySelector("#result-area");
-const diagnosticsToggle = document.querySelector("#diagnostics-toggle");
 const diagnosticsPanel = document.querySelector("#diagnostics-panel");
 const diagnosticsValues = document.querySelector("#diagnostics-values");
 const indexFileInput = document.querySelector("#index-file");
@@ -29,10 +28,19 @@ function renderResults(data) {
     return;
   }
 
-  const cards = data.suggestions.map((item) => `
+  const correctedTextBySuggestion = new Map(
+    (data.diagnostics.selected_corrections || []).map((detail) => [
+      detail.suggestion_number,
+      detail.matched_text,
+    ])
+  );
+  const cards = data.suggestions.map((item, index) => `
     <article class="result-card">
       <div class="result-top">
-        <p class="sentence">${escapeHtml(item.completed_sentence)}</p>
+        <p class="sentence">${highlightMatch(
+          item.completed_sentence,
+          correctedTextBySuggestion.get(index + 1) || data.diagnostics.normalized_query
+        )}</p>
         <span class="score">score ${item.score}</span>
       </div>
       <div class="source"><span>File name:</span> ${escapeHtml(item.source_text)} <b>·</b> <span>Line:</span> ${item.offset}</div>
@@ -46,31 +54,69 @@ function renderResults(data) {
     <div class="result-list">${cards}</div>`;
 }
 
+function highlightMatch(text, normalizedQuery) {
+  const characters = Array.from(text);
+  const normalized = [];
+  const sourcePositions = [];
+  let previousWasSpace = false;
+  characters.forEach((character, index) => {
+    if (/^[\p{L}\p{N}]$/u.test(character)) {
+      normalized.push(character.toLowerCase());
+      sourcePositions.push(index);
+      previousWasSpace = false;
+    } else if (/^\s$/u.test(character) && normalized.length && !previousWasSpace) {
+      normalized.push(" ");
+      sourcePositions.push(index);
+      previousWasSpace = true;
+    }
+  });
+  while (normalized.at(-1) === " ") {
+    normalized.pop();
+    sourcePositions.pop();
+  }
+  const start = normalized.join("").indexOf(normalizedQuery);
+  if (start < 0) return escapeHtml(text);
+
+  const firstCharacter = sourcePositions[start];
+  const lastCharacter = sourcePositions[start + normalizedQuery.length - 1];
+  return `${escapeHtml(characters.slice(0, firstCharacter).join(""))}<strong class="match-highlight">${escapeHtml(characters.slice(firstCharacter, lastCharacter + 1).join(""))}</strong>${escapeHtml(characters.slice(lastCharacter + 1).join(""))}`;
+}
+
 function renderDiagnostics(data) {
   if (!data) {
     diagnosticsPanel.hidden = true;
     return;
   }
 
-  const searchPaths = {
-    "direct-only": "Direct lookup only",
-    "short-query-variants": "One-character variant lookup",
-    "trigram-anchors": "FTS trigram anchor lookup",
-    "full-corpus-fallback": "Full-corpus fallback",
-    empty: "No searchable input",
-  };
-  const rows = [
-    ["Input after cleanup", JSON.stringify(data.normalized_query)],
-    ["Direct-match rows returned (max 5)", `${data.direct_match_count} in ${data.direct_lookup_ms} ms`],
-    ["Search path", searchPaths[data.search_path] || data.search_path],
-  ];
-  if (data.generated_variant_count) {
-    rows.push(["Legal typo variants generated", data.generated_variant_count]);
-  }
-  rows.push(["Engine total", `${data.total_ms} ms`]);
-  diagnosticsValues.innerHTML = rows.map(([label, value]) => `
-    <div><dt>${escapeHtml(String(label))}</dt><dd>${escapeHtml(String(value))}</dd></div>`).join("");
+  diagnosticsValues.innerHTML = (data.log_story || []).map((message, index) => {
+    if (index === 3 && Object.keys(data.correction_trace || {}).length) {
+      return `<li class="log-step-with-details">
+        <span>${escapeHtml(message)}</span>
+        <button class="expand-button" type="button" aria-expanded="false">Expand</button>
+        ${renderCorrectionTrace(data.correction_trace)}
+      </li>`;
+    }
+    return `<li>${escapeHtml(message)}</li>`;
+  }).join("");
   diagnosticsPanel.hidden = false;
+}
+
+function renderCorrectionTrace(trace) {
+  const removeExtra = trace.remove_extra || [];
+  const replace = trace.replace || [];
+  const addMissing = trace.add_missing || [];
+  const list = (items, sentence) => `<ul>${items.map((item) =>
+    `<li>${escapeHtml(sentence(item))}</li>`
+  ).join("")}</ul>`;
+  return `<div class="correction-trace" hidden>
+    <p><code>?</code> means one character from the candidate sentence.</p>
+    <h4>Remove an extra typed character</h4>
+    ${list(removeExtra, (item) => `Remove “${item.character}” at character ${item.position}: “${item.pattern}”`)}
+    <h4>Replace one typed character</h4>
+    ${list(replace, (item) => `Character ${item.position}: “${item.pattern}”`)}
+    <h4>Add one missing character</h4>
+    ${list(addMissing, (item) => `Character ${item.position}: “${item.pattern}”`)}
+  </div>`;
 }
 
 async function search() {
@@ -92,7 +138,7 @@ async function search() {
     const response = await fetch("/api/suggestions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, diagnostics: diagnosticsToggle.checked }),
+      body: JSON.stringify({ query }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Search failed.");
@@ -116,8 +162,14 @@ resetButton.addEventListener("click", () => {
   queryInput.focus();
 });
 
-diagnosticsToggle.addEventListener("change", () => {
-  if (!diagnosticsToggle.checked) diagnosticsPanel.hidden = true;
+diagnosticsValues.addEventListener("click", (event) => {
+  const button = event.target.closest(".expand-button");
+  if (!button) return;
+  const details = button.parentElement.querySelector(".correction-trace");
+  const isExpanded = button.getAttribute("aria-expanded") === "true";
+  button.setAttribute("aria-expanded", String(!isExpanded));
+  button.textContent = isExpanded ? "Expand" : "Collapse";
+  details.hidden = isExpanded;
 });
 
 indexFileInput.addEventListener("change", async () => {
@@ -138,10 +190,26 @@ indexFileInput.addEventListener("change", async () => {
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Index upload failed.");
-    indexMessage.textContent = `Uploaded index is active: ${Number(data.indexed_sentence_count).toLocaleString()} lines ready.`;
+    renderActiveIndex(data);
   } catch (error) {
     indexMessage.textContent = error.message;
   } finally {
     indexFileInput.value = "";
   }
 });
+
+function renderActiveIndex(data) {
+  indexMessage.textContent = `Active index: ${data.index_name} · ${Number(data.indexed_sentence_count).toLocaleString()} lines`;
+}
+
+async function loadActiveIndex() {
+  try {
+    const response = await fetch("/api/status");
+    if (!response.ok) throw new Error("Index status is unavailable.");
+    renderActiveIndex(await response.json());
+  } catch (error) {
+    indexMessage.textContent = "Active index status is unavailable. Run the site with web_app.py.";
+  }
+}
+
+loadActiveIndex();

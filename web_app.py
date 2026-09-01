@@ -33,6 +33,9 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
     server: HTTPServer
 
     def do_GET(self) -> None:  # noqa: N802 - required by BaseHTTPRequestHandler
+        if self.path == "/api/status":
+            self._send_json(self._index_summary())
+            return
         requested = "index.html" if self.path in ("/", "/index.html") else self.path.lstrip("/")
         candidate = (WEB_DIRECTORY / requested).resolve()
         if WEB_DIRECTORY.resolve() not in candidate.parents or not candidate.is_file():
@@ -62,9 +65,6 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
             query = payload.get("query", "")
             if not isinstance(query, str) or len(query) > MAX_QUERY_LENGTH:
                 raise ValueError("query must be a short string.")
-            diagnostics_requested = payload.get("diagnostics", False)
-            if not isinstance(diagnostics_requested, bool):
-                raise ValueError("diagnostics must be true or false.")
         except (UnicodeDecodeError, ValueError, json.JSONDecodeError) as error:
             self._send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)
             return
@@ -75,25 +75,19 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
 
         started_at = time.perf_counter()
         engine: AutocompleteEngine = getattr(self.server, "engine")
-        diagnostics = None
-        if diagnostics_requested:
-            suggestions, diagnostics = engine.search_with_diagnostics(query)
-        else:
-            suggestions = engine.get_best_k_completions(query)
+        suggestions, diagnostics = engine.search_with_diagnostics(query)
         elapsed_ms = (time.perf_counter() - started_at) * 1_000
-        diagnostic_payload = None
-        if diagnostics is not None:
-            diagnostic_payload = diagnostics.as_dict()
-            diagnostic_payload.update(
-                {
-                    "request_id": uuid.uuid4().hex,
-                    "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-                    "index_status": engine.index_status,
-                    "indexed_sentence_count": engine.indexed_sentence_count,
-                    "server_elapsed_ms": round(elapsed_ms, 3),
-                }
-            )
-            self._append_diagnostics(diagnostic_payload)
+        diagnostic_payload = diagnostics.as_dict()
+        diagnostic_payload.update(
+            {
+                "request_id": uuid.uuid4().hex,
+                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                "index_status": engine.index_status,
+                "indexed_sentence_count": engine.indexed_sentence_count,
+                "server_elapsed_ms": round(elapsed_ms, 3),
+            }
+        )
+        self._append_diagnostics(diagnostic_payload)
         self._send_json(
             {
                 "suggestions": [
@@ -134,25 +128,54 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
                     remaining -= len(chunk)
 
             previous_engine: AutocompleteEngine = getattr(self.server, "engine")
-            replacement = AutocompleteEngine.from_existing_index(
-                previous_engine.archive_path, uploaded_path
-            )
+            candidate = AutocompleteEngine.from_existing_index(previous_engine.archive_path, uploaded_path)
+            candidate.close()
         except (OSError, RuntimeError, ValueError, sqlite3.DatabaseError) as error:
             if "uploaded_path" in locals() and uploaded_path.exists():
                 uploaded_path.unlink()
             self._send_json({"error": "The index was not accepted: {0}".format(error)}, HTTPStatus.BAD_REQUEST)
             return
 
-        setattr(self.server, "engine", replacement)
-        setattr(self.server, "index_origin", "uploaded file")
         previous_engine.close()
-        self._send_json(
-            {
-                "message": "Index accepted and loaded.",
-                "indexed_sentence_count": replacement.indexed_sentence_count,
-                "index_status": replacement.index_status,
-            }
+        persistent_index_path: Path = getattr(self.server, "persistent_index_path")
+        backup_path = persistent_index_path.with_name(
+            ".{0}.{1}.backup".format(persistent_index_path.name, uuid.uuid4().hex)
         )
+        try:
+            if persistent_index_path.is_file():
+                persistent_index_path.replace(backup_path)
+            uploaded_path.replace(persistent_index_path)
+            replacement = AutocompleteEngine.from_existing_index(
+                previous_engine.archive_path, persistent_index_path
+            )
+        except (OSError, RuntimeError, ValueError, sqlite3.DatabaseError) as error:
+            if persistent_index_path.is_file():
+                persistent_index_path.unlink()
+            if backup_path.is_file():
+                backup_path.replace(persistent_index_path)
+            restored_engine = AutocompleteEngine.from_existing_index(
+                previous_engine.archive_path, persistent_index_path
+            )
+            setattr(self.server, "engine", restored_engine)
+            self._send_json({"error": "The index was not activated: {0}".format(error)}, HTTPStatus.BAD_REQUEST)
+            return
+        finally:
+            if backup_path.is_file():
+                backup_path.unlink()
+
+        setattr(self.server, "engine", replacement)
+        setattr(self.server, "active_index_name", Path(filename).name)
+        self._send_json({"message": "Index accepted and loaded.", **self._index_summary()})
+
+    def _index_summary(self) -> dict[str, Any]:
+        """Describe the exact index currently used by the live engine."""
+
+        engine: AutocompleteEngine = getattr(self.server, "engine")
+        return {
+            "index_name": getattr(self.server, "active_index_name"),
+            "indexed_sentence_count": engine.indexed_sentence_count,
+            "index_status": engine.index_status,
+        }
 
     def _append_diagnostics(self, diagnostic_payload: dict[str, Any]) -> None:
         """Persist the exact diagnostic record that is sent to the browser."""
@@ -205,7 +228,8 @@ def main() -> None:
     address = ("127.0.0.1", arguments.port)
     server = HTTPServer(address, AutocompleteWebHandler)
     setattr(server, "engine", engine)
-    setattr(server, "index_origin", "startup index")
+    setattr(server, "persistent_index_path", arguments.index.resolve())
+    setattr(server, "active_index_name", arguments.index.name)
     server_upload_directory = tempfile.TemporaryDirectory(prefix="autocomplete-upload-")
     setattr(server, "upload_directory", Path(server_upload_directory.name))
     setattr(server, "log_directory", arguments.log_dir)
