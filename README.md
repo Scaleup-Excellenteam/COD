@@ -137,26 +137,75 @@ py -m semantic.build_embeddings --all
 
 Exactly one of `--limit` or `--all` is required, so the complete corpus cannot
 be embedded accidentally. Both generated JSONL files are local artifacts and
-are ignored by Git.
+are ignored by Git. Convert the completed corpus embeddings into the two
+satellite deployment artifacts:
 
-The planned architecture is:
-
-```text
-EARTH (offline)
-corpus -> semantic dataset -> Gemini corpus embeddings -> deployment artifact
-
-GROUND (future runtime)
-query -> optional Gemini query embedding -> text + vector sent to satellite
-
-SATELLITE (future runtime)
-text         -> Part A
-query vector -> local semantic index -> Semantic Top 5
+```powershell
+py -m semantic.build_faiss_index `
+    --input data/semantic_embeddings.jsonl `
+    --index-output data/semantic.faiss `
+    --metadata-output data/semantic_metadata.jsonl
 ```
 
-The generated corpus embeddings are intended to become a future satellite
-deployment artifact. Gemini does not run on the satellite. Ground query
-embedding, satellite semantic indexing, and Semantic Top 5 retrieval are not
-implemented yet.
+This creates an exact FAISS `IndexFlatIP` containing L2-normalized `float32`
+vectors and a positionally aligned metadata JSONL without embedding vectors.
+Both deployment artifacts are also ignored by Git.
+
+The complete architecture is:
+
+```text
+EARTH — offline
+
+Corpus
+→ semantic_dataset.jsonl
+→ Gemini 768D embeddings
+→ semantic_embeddings.jsonl
+→ FAISS IndexFlatIP + metadata
+→ upload deployment artifacts
+
+
+GROUND — future online
+
+User query
+→ optional Gemini query embedding
+→ original text + 768D vector
+→ satellite
+
+
+SATELLITE — local runtime
+
+text
+→ Part A
+
+query vector
+→ local FAISS index
+→ cosine similarity
+→ Semantic Top 5
+```
+
+Satellite semantic retrieval receives an already-generated compatible 768D
+query vector and loads its deployment files once:
+
+```python
+from semantic.search import SemanticSearchEngine
+
+engine = SemanticSearchEngine.from_files(
+    "data/semantic.faiss",
+    "data/semantic_metadata.jsonl",
+)
+results = engine.search(query_embedding)
+```
+
+FAISS search runs entirely locally on the satellite; Gemini never runs there
+and no API key or network access is required. Corpus and query embeddings must
+use compatible Gemini embedding configuration (currently
+`gemini-embedding-2`, 768 dimensions). Part A remains independent and retains
+its own matching and score. A semantic result contains `sentence`,
+`source_text`, `offset`, and a cosine `semantic_score`, which is distinct from
+the Part A score.
+
+Ground-side query embedding, the admin toggle, networking, and UI integration
+remain future work and are not part of the local semantic runtime.
 
 ## Benchmark against the supplied corpus
 
