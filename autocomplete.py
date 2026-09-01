@@ -8,7 +8,7 @@ truth for the assignment's matching and scoring rules.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator, List, Optional, Sequence, Tuple
 import argparse
@@ -59,6 +59,68 @@ class SentenceData:
     completed_sentence: str
     source_text: str
     offset: int
+
+
+@dataclass
+class SearchDiagnostics:
+    """Measured counters for one query; created only in diagnostics mode."""
+
+    normalized_query: str = ""
+    direct_match_count: int = 0
+    search_path: str = "empty"
+    generated_variant_count: int = 0
+    candidate_row_count: int = 0
+    result_count: int = 0
+    normalization_ms: float = 0.0
+    direct_lookup_ms: float = 0.0
+    candidate_and_scoring_ms: float = 0.0
+    total_ms: float = 0.0
+    correction_operations: dict = field(default_factory=dict)
+    selected_corrections: List[dict] = field(default_factory=list)
+    log_story: List[str] = field(default_factory=list)
+    correction_trace: dict = field(default_factory=dict)
+
+    def as_dict(self) -> dict:
+        """Return only JSON-safe values for the local diagnostics UI/log."""
+
+        return {
+            "normalized_query": self.normalized_query,
+            "direct_match_count": self.direct_match_count,
+            "search_path": self.search_path,
+            "generated_variant_count": self.generated_variant_count,
+            "candidate_row_count": self.candidate_row_count,
+            "result_count": self.result_count,
+            "normalization_ms": round(self.normalization_ms, 3),
+            "direct_lookup_ms": round(self.direct_lookup_ms, 3),
+            "candidate_and_scoring_ms": round(self.candidate_and_scoring_ms, 3),
+            "total_ms": round(self.total_ms, 3),
+            "correction_operations": self.correction_operations,
+            "selected_corrections": self.selected_corrections,
+            "log_story": self.log_story,
+            "correction_trace": self.correction_trace,
+        }
+
+
+@dataclass(frozen=True)
+class EditExplanation:
+    """One concrete, legal one-character correction for a matched sentence."""
+
+    operation: str
+    position: int
+    from_character: str
+    to_character: str
+    matched_text: str
+    score: int
+
+    def as_dict(self) -> dict:
+        return {
+            "operation": self.operation,
+            "position": self.position,
+            "from_character": self.from_character,
+            "to_character": self.to_character,
+            "matched_text": self.matched_text,
+            "score": self.score,
+        }
 
 
 def normalize_text(text: str) -> str:
@@ -160,6 +222,44 @@ class OneEditMatcher:
 
         return best
 
+    def best_explanation(self, normalized_sentence: str) -> Optional[EditExplanation]:
+        """Describe the same highest-scoring correction as ``best_score``."""
+
+        if self.query in normalized_sentence:
+            return EditExplanation("exact", 0, "", "", self.query, 2 * self.length)
+
+        best: Optional[EditExplanation] = None
+        for index, (score, candidate) in enumerate(self.deleted_character_candidates):
+            if score < 0 or candidate not in normalized_sentence:
+                continue
+            explanation = EditExplanation(
+                "remove-extra", index + 1, self.query[index], "", candidate, score
+            )
+            if best is None or explanation.score > best.score:
+                best = explanation
+
+        for index, (score, pattern) in enumerate(self.substitution_patterns):
+            match = pattern.search(normalized_sentence)
+            if score < 0 or match is None:
+                continue
+            matched_text = match.group(0)
+            explanation = EditExplanation(
+                "replace", index + 1, self.query[index], matched_text[index], matched_text, score
+            )
+            if best is None or explanation.score > best.score:
+                best = explanation
+
+        for index, (score, pattern) in enumerate(self.insertion_patterns):
+            match = pattern.search(normalized_sentence)
+            if score < 0 or match is None:
+                continue
+            matched_text = match.group(0)
+            explanation = EditExplanation(
+                "add-missing", index + 1, "", matched_text[index], matched_text, score
+            )
+            if best is None or explanation.score > best.score:
+                best = explanation
+        return best
 
 class AutocompleteEngine:
     """Build once, then answer autocomplete requests with low latency."""
@@ -500,7 +600,10 @@ class AutocompleteEngine:
         )
 
     def _short_query_results(
-        self, normalized_query: str, exact_results: List[AutoCompleteData]
+        self,
+        normalized_query: str,
+        exact_results: List[AutoCompleteData],
+        diagnostics: Optional[SearchDiagnostics] = None,
     ) -> List[AutoCompleteData]:
         """Score 2-5 character queries by directly searching every one-edit form.
 
@@ -514,10 +617,12 @@ class AutocompleteEngine:
 
         length = len(normalized_query)
         variants = {}
+        operation_counts = {"replace": 0, "remove-extra": 0, "add-missing": 0}
 
-        def add_variant(variant: str, score: int) -> None:
+        def add_variant(variant: str, score: int, operation: str) -> None:
             if score < 0:
                 return
+            operation_counts[operation] += 1
             current_score = variants.get(variant)
             if current_score is None or score > current_score:
                 variants[variant] = score
@@ -530,21 +635,33 @@ class AutocompleteEngine:
                     add_variant(
                         normalized_query[:index] + character + normalized_query[index + 1 :],
                         substitution_score,
+                        "replace",
                     )
 
             deletion_score = 2 * (length - 1) - _insertion_or_deletion_penalty(position)
-            add_variant(normalized_query[:index] + normalized_query[index + 1 :], deletion_score)
+            add_variant(
+                normalized_query[:index] + normalized_query[index + 1 :], deletion_score, "remove-extra"
+            )
 
         for index in range(length + 1):
             position = index + 1
             insertion_score = 2 * length - _insertion_or_deletion_penalty(position)
             for character in NORMALIZED_CORPUS_ALPHABET:
-                add_variant(
-                    normalized_query[:index] + character + normalized_query[index:],
-                    insertion_score,
-                )
+                    add_variant(
+                        normalized_query[:index] + character + normalized_query[index:],
+                        insertion_score,
+                        "add-missing",
+                    )
 
         best_by_id = {}
+        if diagnostics is not None:
+            diagnostics.generated_variant_count = len(variants)
+            diagnostics.correction_operations = {
+                "mode": "generated-variants",
+                "replace": operation_counts["replace"],
+                "remove_extra": operation_counts["remove-extra"],
+                "add_missing": operation_counts["add-missing"],
+            }
         # Exact results are already known to be the only possible highest-score
         # matches. They may be fewer than five, otherwise the caller exits early.
         for result in exact_results:
@@ -555,6 +672,8 @@ class AutocompleteEngine:
                 if variant_score != score:
                     continue
                 for row in self._variant_rows(variant):
+                    if diagnostics is not None:
+                        diagnostics.candidate_row_count += 1
                     result = self._result_from_row(row, score)
                     key = (result.completed_sentence, result.source_text, result.offset)
                     current = best_by_id.get(key)
@@ -617,13 +736,18 @@ class AutocompleteEngine:
         )
 
     def _top_matches_from_rows(
-        self, rows: Iterator[sqlite3.Row], matcher: OneEditMatcher
+        self,
+        rows: Iterator[sqlite3.Row],
+        matcher: OneEditMatcher,
+        diagnostics: Optional[SearchDiagnostics] = None,
     ) -> List[AutoCompleteData]:
         """Keep only five best results while consuming an SQLite cursor."""
 
         best: List[AutoCompleteData] = []
         seen_ids = set()
         for row in rows:
+            if diagnostics is not None:
+                diagnostics.candidate_row_count += 1
             if row["id"] in seen_ids:
                 continue
             seen_ids.add(row["id"])
@@ -639,34 +763,219 @@ class AutocompleteEngine:
                 best.sort(key=self._result_sort_key)
         return best
 
-    def get_best_k_completions(self, prefix: str) -> List[AutoCompleteData]:
-        """Return the five highest-scoring legal autocomplete results.
+    def _search(
+        self, prefix: str, diagnostics: Optional[SearchDiagnostics] = None
+    ) -> List[AutoCompleteData]:
+        """Execute one search, optionally collecting measured diagnostics."""
 
-        An empty normalized string deliberately returns no results.  A blank
-        query would otherwise match every line as an empty substring and is not
-        useful in the interactive program.
-        """
-
+        search_started_at = time.perf_counter()
+        normalization_started_at = time.perf_counter()
         normalized_query = normalize_text(prefix)
+        if diagnostics is not None:
+            diagnostics.normalized_query = normalized_query
+            diagnostics.normalization_ms = (time.perf_counter() - normalization_started_at) * 1_000
         if not normalized_query:
+            if diagnostics is not None:
+                diagnostics.correction_operations = {"mode": "not-run"}
+                diagnostics.log_story = [
+                    "The input contained no searchable letters or numbers after cleanup."
+                ]
+                diagnostics.total_ms = (time.perf_counter() - search_started_at) * 1_000
             return []
 
+        direct_started_at = time.perf_counter()
         exact = self._exact_matches(normalized_query)
+        if diagnostics is not None:
+            diagnostics.direct_match_count = len(exact)
+            diagnostics.direct_lookup_ms = (time.perf_counter() - direct_started_at) * 1_000
         # Exact matches have score 2 * len(query), strictly higher than every
         # one-edit match.  Five of them settle the result without further work.
         if len(exact) == K:
+            if diagnostics is not None:
+                diagnostics.search_path = "direct-only"
+                diagnostics.correction_operations = {"mode": "not-run"}
+                diagnostics.result_count = len(exact)
+                self._build_log_story(diagnostics, exact)
+                diagnostics.total_ms = (time.perf_counter() - search_started_at) * 1_000
             return exact
 
+        candidates_started_at = time.perf_counter()
         if 2 <= len(normalized_query) <= 5:
-            return self._short_query_results(normalized_query, exact)
+            results = self._short_query_results(normalized_query, exact, diagnostics)
+            if diagnostics is not None:
+                diagnostics.search_path = "short-query-variants"
+        else:
+            matcher = OneEditMatcher(normalized_query)
+            if diagnostics is not None:
+                diagnostics.correction_operations = {
+                    "mode": "candidate-checks",
+                    "replace": len(normalized_query),
+                    "remove_extra": len(normalized_query),
+                    "add_missing": len(normalized_query) + 1,
+                }
+            if len(normalized_query) >= 6:
+                rows = self._candidate_rows(normalized_query)
+                if diagnostics is not None:
+                    diagnostics.search_path = "trigram-anchors"
+            else:
+                rows = self._all_rows()
+                if diagnostics is not None:
+                    diagnostics.search_path = "full-corpus-fallback"
+            results = self._top_matches_from_rows(rows, matcher, diagnostics)
 
-        matcher = OneEditMatcher(normalized_query)
-        rows = (
-            self._candidate_rows(normalized_query)
-            if len(normalized_query) >= 6
-            else self._all_rows()
-        )
-        return self._top_matches_from_rows(rows, matcher)
+        if diagnostics is not None:
+            diagnostics.candidate_and_scoring_ms = (time.perf_counter() - candidates_started_at) * 1_000
+            diagnostics.result_count = len(results)
+            explanation_matcher = OneEditMatcher(normalized_query)
+            for result_number, result in enumerate(results, start=1):
+                explanation = explanation_matcher.best_explanation(
+                    normalize_text(result.completed_sentence)
+                )
+                if (
+                    explanation is not None
+                    and explanation.operation != "exact"
+                    and explanation.score == result.score
+                ):
+                    detail = explanation.as_dict()
+                    detail["suggestion_number"] = result_number
+                    diagnostics.selected_corrections.append(detail)
+            self._build_log_story(diagnostics, results)
+            diagnostics.total_ms = (time.perf_counter() - search_started_at) * 1_000
+        return results
+
+    @staticmethod
+    def _build_log_story(
+        diagnostics: SearchDiagnostics, results: List[AutoCompleteData]
+    ) -> None:
+        """Build the human-readable log from facts collected in this search."""
+
+        query = diagnostics.normalized_query
+        story = ['Input after cleanup: "{0}".'.format(query)]
+        if len(query) >= 3:
+            trigrams = [query[index : index + 3] for index in range(len(query) - 2)]
+            story.append(
+                'Trigrams searched: {0}.'.format(
+                    " -> ".join('"{0}"'.format(trigram) for trigram in trigrams)
+                )
+            )
+        else:
+            story.append('The direct text index searched the corpus for "{0}".'.format(query))
+        if diagnostics.search_path == "direct-only":
+            story.extend(
+                [
+                    "Five direct matches were found, so correction was not attempted.",
+                    "Direct matches rank above one-character corrections.",
+                ]
+            )
+        else:
+            story.append("Word not found. Correction started.")
+            diagnostics.correction_trace = {
+                "remove_extra": [
+                    {
+                        "pattern": query[:index] + query[index + 1 :],
+                        "character": query[index],
+                        "position": index + 1,
+                    }
+                    for index in range(len(query))
+                ],
+                "replace": [
+                    {
+                        "pattern": query[:index] + "?" + query[index + 1 :],
+                        "position": index + 1,
+                    }
+                    for index in range(len(query))
+                ],
+                "add_missing": [
+                    {
+                        "pattern": query[:index] + "?" + query[index:],
+                        "position": index + 1,
+                    }
+                    for index in range(len(query) + 1)
+                ],
+            }
+            operations = diagnostics.correction_operations
+            if operations.get("mode") == "generated-variants":
+                story.append(
+                    "Generated legal alternatives: {0} replacements, {1} removals, and {2} additions.".format(
+                        operations["replace"], operations["remove_extra"], operations["add_missing"]
+                    )
+                )
+            else:
+                story.append(
+                    "For each likely sentence, tried three fixes: replace a character, remove an extra character, or add a missing character."
+                )
+            if diagnostics.selected_corrections:
+                unique_corrections = {}
+                for detail in diagnostics.selected_corrections:
+                    key = (
+                        detail["operation"],
+                        detail["position"],
+                        detail["from_character"],
+                        detail["to_character"],
+                        detail["matched_text"],
+                        detail["score"],
+                    )
+                    unique_corrections.setdefault(key, detail)
+                for detail in unique_corrections.values():
+                    if detail["operation"] == "replace":
+                        description = '"{0}" -> "{1}" by changing "{2}" to "{3}" at character {4}'.format(
+                            query,
+                            detail["matched_text"],
+                            detail["from_character"],
+                            detail["to_character"],
+                            detail["position"],
+                        )
+                    elif detail["operation"] == "remove-extra":
+                        description = '"{0}" -> "{1}" by removing "{2}" at character {3}'.format(
+                            query,
+                            detail["matched_text"],
+                            detail["from_character"],
+                            detail["position"],
+                        )
+                    else:
+                        description = '"{0}" -> "{1}" by adding "{2}" at character {3}'.format(
+                            query,
+                            detail["matched_text"],
+                            detail["to_character"],
+                            detail["position"],
+                        )
+                    story.append(
+                        "Selected correction: {0} (score {1}).".format(description, detail["score"])
+                    )
+                if len(diagnostics.selected_corrections) > 1:
+                    story.append(
+                        (
+                            "The same correction was used in {0} final suggestions."
+                            if len(unique_corrections) == 1
+                            else "These corrections were used in {0} final suggestions."
+                        ).format(len(diagnostics.selected_corrections))
+                    )
+            else:
+                story.append("No corrected match reached the final suggestions.")
+        diagnostics.log_story = story
+
+    def get_best_k_completions(self, prefix: str) -> List[AutoCompleteData]:
+        """Return the five highest-scoring legal autocomplete results."""
+
+        return self._search(prefix)
+
+    def search_with_diagnostics(self, prefix: str) -> Tuple[List[AutoCompleteData], SearchDiagnostics]:
+        """Search once and return the results plus measurements from that run."""
+
+        diagnostics = SearchDiagnostics()
+        return self._search(prefix, diagnostics), diagnostics
+
+    @classmethod
+    def from_existing_index(cls, archive_path: Path, index_path: Path) -> "AutocompleteEngine":
+        """Open a validated index without rebuilding it if validation fails."""
+
+        engine = cls(archive_path, index_path=index_path)
+        try:
+            engine._load_existing_index()
+        except Exception:
+            engine.close()
+            raise
+        return engine
 
 
 _default_engine: Optional[AutocompleteEngine] = None

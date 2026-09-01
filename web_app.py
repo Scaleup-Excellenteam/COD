@@ -7,12 +7,16 @@ locally; text typed into it never leaves this computer.
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+import sqlite3
 import time
 from typing import Any
+import tempfile
+import uuid
 import webbrowser
 
 from autocomplete import AutocompleteEngine
@@ -20,6 +24,7 @@ from autocomplete import AutocompleteEngine
 
 WEB_DIRECTORY = Path(__file__).with_name("web")
 MAX_QUERY_LENGTH = 2_000
+MAX_INDEX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024
 
 
 class AutocompleteWebHandler(BaseHTTPRequestHandler):
@@ -28,6 +33,9 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
     server: HTTPServer
 
     def do_GET(self) -> None:  # noqa: N802 - required by BaseHTTPRequestHandler
+        if self.path == "/api/status":
+            self._send_json(self._index_summary())
+            return
         requested = "index.html" if self.path in ("/", "/index.html") else self.path.lstrip("/")
         candidate = (WEB_DIRECTORY / requested).resolve()
         if WEB_DIRECTORY.resolve() not in candidate.parents or not candidate.is_file():
@@ -42,6 +50,9 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
         self._send_bytes(candidate.read_bytes(), content_types.get(candidate.suffix, "application/octet-stream"))
 
     def do_POST(self) -> None:  # noqa: N802 - required by BaseHTTPRequestHandler
+        if self.path == "/api/index":
+            self._replace_index_from_upload()
+            return
         if self.path != "/api/suggestions":
             self.send_error(HTTPStatus.NOT_FOUND)
             return
@@ -64,8 +75,19 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
 
         started_at = time.perf_counter()
         engine: AutocompleteEngine = getattr(self.server, "engine")
-        suggestions = engine.get_best_k_completions(query)
+        suggestions, diagnostics = engine.search_with_diagnostics(query)
         elapsed_ms = (time.perf_counter() - started_at) * 1_000
+        diagnostic_payload = diagnostics.as_dict()
+        diagnostic_payload.update(
+            {
+                "request_id": uuid.uuid4().hex,
+                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                "index_status": engine.index_status,
+                "indexed_sentence_count": engine.indexed_sentence_count,
+                "server_elapsed_ms": round(elapsed_ms, 3),
+            }
+        )
+        self._append_diagnostics(diagnostic_payload)
         self._send_json(
             {
                 "suggestions": [
@@ -78,9 +100,90 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
                     for item in suggestions
                 ],
                 "elapsed_ms": round(elapsed_ms, 3),
+                "diagnostics": diagnostic_payload,
                 "reset": False,
             }
         )
+
+    def _replace_index_from_upload(self) -> None:
+        """Accept an index upload only when it matches the active archive."""
+
+        try:
+            content_length = int(self.headers.get("Content-Length", "0"))
+            filename = self.headers.get("X-Index-Filename", "index.sqlite3")
+            if content_length <= 0 or content_length > MAX_INDEX_UPLOAD_BYTES:
+                raise ValueError("The index file must be between 1 byte and 2 GiB.")
+            if not filename.lower().endswith(".sqlite3"):
+                raise ValueError("Please select an index.sqlite3 file.")
+
+            upload_directory: Path = getattr(self.server, "upload_directory")
+            uploaded_path = upload_directory / "uploaded-{0}.sqlite3".format(uuid.uuid4().hex)
+            remaining = content_length
+            with uploaded_path.open("wb") as destination:
+                while remaining:
+                    chunk = self.rfile.read(min(1024 * 1024, remaining))
+                    if not chunk:
+                        raise ValueError("The uploaded file ended unexpectedly.")
+                    destination.write(chunk)
+                    remaining -= len(chunk)
+
+            previous_engine: AutocompleteEngine = getattr(self.server, "engine")
+            candidate = AutocompleteEngine.from_existing_index(previous_engine.archive_path, uploaded_path)
+            candidate.close()
+        except (OSError, RuntimeError, ValueError, sqlite3.DatabaseError) as error:
+            if "uploaded_path" in locals() and uploaded_path.exists():
+                uploaded_path.unlink()
+            self._send_json({"error": "The index was not accepted: {0}".format(error)}, HTTPStatus.BAD_REQUEST)
+            return
+
+        previous_engine.close()
+        persistent_index_path: Path = getattr(self.server, "persistent_index_path")
+        backup_path = persistent_index_path.with_name(
+            ".{0}.{1}.backup".format(persistent_index_path.name, uuid.uuid4().hex)
+        )
+        try:
+            if persistent_index_path.is_file():
+                persistent_index_path.replace(backup_path)
+            uploaded_path.replace(persistent_index_path)
+            replacement = AutocompleteEngine.from_existing_index(
+                previous_engine.archive_path, persistent_index_path
+            )
+        except (OSError, RuntimeError, ValueError, sqlite3.DatabaseError) as error:
+            if persistent_index_path.is_file():
+                persistent_index_path.unlink()
+            if backup_path.is_file():
+                backup_path.replace(persistent_index_path)
+            restored_engine = AutocompleteEngine.from_existing_index(
+                previous_engine.archive_path, persistent_index_path
+            )
+            setattr(self.server, "engine", restored_engine)
+            self._send_json({"error": "The index was not activated: {0}".format(error)}, HTTPStatus.BAD_REQUEST)
+            return
+        finally:
+            if backup_path.is_file():
+                backup_path.unlink()
+
+        setattr(self.server, "engine", replacement)
+        setattr(self.server, "active_index_name", Path(filename).name)
+        self._send_json({"message": "Index accepted and loaded.", **self._index_summary()})
+
+    def _index_summary(self) -> dict[str, Any]:
+        """Describe the exact index currently used by the live engine."""
+
+        engine: AutocompleteEngine = getattr(self.server, "engine")
+        return {
+            "index_name": getattr(self.server, "active_index_name"),
+            "indexed_sentence_count": engine.indexed_sentence_count,
+            "index_status": engine.index_status,
+        }
+
+    def _append_diagnostics(self, diagnostic_payload: dict[str, Any]) -> None:
+        """Persist the exact diagnostic record that is sent to the browser."""
+
+        log_directory: Path = getattr(self.server, "log_directory")
+        log_directory.mkdir(parents=True, exist_ok=True)
+        with (log_directory / "search.jsonl").open("a", encoding="utf-8") as log_file:
+            log_file.write(json.dumps(diagnostic_payload, ensure_ascii=False) + "\n")
 
     def log_message(self, _format: str, *_args: object) -> None:
         """Keep normal browser requests out of the terminal output."""
@@ -105,6 +208,7 @@ def main() -> None:
     parser.add_argument("--index", type=Path, default=Path("index.sqlite3"))
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--rebuild-index", action="store_true")
+    parser.add_argument("--log-dir", type=Path, default=Path("logs"))
     parser.add_argument("--no-browser", action="store_true")
     arguments = parser.parse_args()
 
@@ -124,6 +228,11 @@ def main() -> None:
     address = ("127.0.0.1", arguments.port)
     server = HTTPServer(address, AutocompleteWebHandler)
     setattr(server, "engine", engine)
+    setattr(server, "persistent_index_path", arguments.index.resolve())
+    setattr(server, "active_index_name", arguments.index.name)
+    server_upload_directory = tempfile.TemporaryDirectory(prefix="autocomplete-upload-")
+    setattr(server, "upload_directory", Path(server_upload_directory.name))
+    setattr(server, "log_directory", arguments.log_dir)
     url = "http://{0}:{1}".format(*address)
     print("Open {0} — press Ctrl+C to stop.".format(url))
     if not arguments.no_browser:
@@ -134,7 +243,8 @@ def main() -> None:
         print("\nStopping web UI.")
     finally:
         server.server_close()
-        engine.close()
+        getattr(server, "engine").close()
+        server_upload_directory.cleanup()
 
 
 if __name__ == "__main__":

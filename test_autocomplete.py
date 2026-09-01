@@ -84,6 +84,29 @@ class AutocompleteSpecificationTests(unittest.TestCase):
         self.assertEqual(result.completed_sentence, "Something useful happens here.")
         self.assertEqual(result.score, 29)
 
+    def test_diagnostics_are_collected_from_the_same_search(self) -> None:
+        results, diagnostics = self.engine.search_with_diagnostics("xomething useful")
+
+        self.assertTrue(results)
+        self.assertEqual(diagnostics.normalized_query, "xomething useful")
+        self.assertEqual(diagnostics.search_path, "trigram-anchors")
+        self.assertGreater(diagnostics.candidate_row_count, 0)
+        self.assertEqual(diagnostics.result_count, len(results))
+        self.assertGreaterEqual(diagnostics.total_ms, diagnostics.direct_lookup_ms)
+        self.assertEqual(diagnostics.correction_operations["mode"], "candidate-checks")
+        self.assertTrue(diagnostics.selected_corrections)
+        self.assertEqual(
+            diagnostics.correction_trace["replace"][0]["pattern"], "?omething useful"
+        )
+        self.assertEqual(
+            diagnostics.correction_trace["remove_extra"][0]["pattern"], "omething useful"
+        )
+        correction = diagnostics.selected_corrections[0]
+        self.assertEqual(correction["operation"], "replace")
+        self.assertEqual(correction["from_character"], "x")
+        self.assertEqual(correction["to_character"], "s")
+        self.assertEqual(correction["matched_text"], "something useful")
+
     def test_substitution_penalty_at_every_position(self) -> None:
         target = "abcdefghij"
         penalties = [5, 4, 3, 2, 1, 1, 1, 1, 1, 1]
