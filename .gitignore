@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 *.sqlite3
+.env
 
 # The supplied corpus is input data, not source code for the debug version.
 Archive (2).zip
