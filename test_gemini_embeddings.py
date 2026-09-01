@@ -9,8 +9,10 @@ from google.genai import types
 from semantic.gemini_embeddings import (
     EmbeddingResponseError,
     create_client,
+    embed_query,
     embed_sentence,
     prepare_document_text,
+    prepare_query_text,
 )
 
 
@@ -112,6 +114,66 @@ class EmbedSentenceTests(unittest.TestCase):
                 EmbeddingResponseError, "exactly one embedding"
             ):
                 embed_sentence(FakeClient(response), "Sentence")
+
+
+class EmbedQueryTests(unittest.TestCase):
+    def test_formats_query_input_without_modifying_original_query(self) -> None:
+        query = "How do computers learn?"
+
+        prepared = prepare_query_text(query)
+
+        self.assertEqual(
+            prepared,
+            "task: search result | query: How do computers learn?",
+        )
+        self.assertEqual(query, "How do computers learn?")
+
+    def test_one_query_makes_one_768_dimension_query_request(self) -> None:
+        values = [index / 1000 for index in range(768)]
+        client = FakeClient(
+            types.EmbedContentResponse(
+                embeddings=[types.ContentEmbedding(values=values)]
+            )
+        )
+
+        embedding = embed_query(client, "How do computers learn?")
+
+        self.assertEqual(embedding, values)
+        self.assertEqual(len(client.models.calls), 1)
+        call = client.models.calls[0]
+        self.assertEqual(call["model"], "gemini-embedding-2")
+        self.assertEqual(
+            call["contents"],
+            "task: search result | query: How do computers learn?",
+        )
+        self.assertEqual(call["config"].output_dimensionality, 768)
+
+    def test_rejects_blank_query_before_making_a_request(self) -> None:
+        client = FakeClient(types.EmbedContentResponse(embeddings=[]))
+
+        for query in ("", "   ", None):
+            with self.subTest(query=query), self.assertRaisesRegex(
+                ValueError, "nonblank"
+            ):
+                embed_query(client, query)
+        self.assertEqual(client.models.calls, [])
+
+    def test_rejects_invalid_query_responses(self) -> None:
+        invalid_responses = [
+            types.EmbedContentResponse(embeddings=[]),
+            types.EmbedContentResponse(
+                embeddings=[types.ContentEmbedding(values=[0.0] * 767)]
+            ),
+            SimpleNamespace(
+                embeddings=[SimpleNamespace(values=[0.0] * 767 + [True])]
+            ),
+        ]
+
+        for response in invalid_responses:
+            with self.subTest(response=response), self.assertRaises(
+                EmbeddingResponseError
+            ):
+                embed_query(FakeClient(response), "Useful query")
 
     def test_rejects_missing_embedding_values(self) -> None:
         response = SimpleNamespace(
