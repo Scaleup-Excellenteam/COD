@@ -854,7 +854,7 @@ class AutocompleteEngine:
         if len(query) >= 3:
             trigrams = [query[index : index + 3] for index in range(len(query) - 2)]
             story.append(
-                'Trigrams searched: {0}.'.format(
+                'Query split into trigrams for the direct lookup: {0}.'.format(
                     " -> ".join('"{0}"'.format(trigram) for trigram in trigrams)
                 )
             )
@@ -868,7 +868,7 @@ class AutocompleteEngine:
                 ]
             )
         else:
-            story.append("Word not found. Correction started.")
+            story.append("No direct match was found. Correction started.")
             diagnostics.correction_trace = {
                 "remove_extra": [
                     {
@@ -901,8 +901,12 @@ class AutocompleteEngine:
                     )
                 )
             else:
+                anchor_size = min(8, len(query) // 2)
+                anchors = (query[:anchor_size], query[-anchor_size:])
                 story.append(
-                    "For each likely sentence, tried three fixes: replace a character, remove an extra character, or add a missing character."
+                    'Candidates containing "{0}" or "{1}" were checked in this order: remove an extra character, replace one character, then add a missing character.'.format(
+                        anchors[0], anchors[1]
+                    )
                 )
             if diagnostics.selected_corrections:
                 unique_corrections = {}

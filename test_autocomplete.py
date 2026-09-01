@@ -94,6 +94,14 @@ class AutocompleteSpecificationTests(unittest.TestCase):
         self.assertEqual(diagnostics.result_count, len(results))
         self.assertGreaterEqual(diagnostics.total_ms, diagnostics.direct_lookup_ms)
         self.assertEqual(diagnostics.correction_operations["mode"], "candidate-checks")
+        self.assertEqual(
+            diagnostics.log_story[1],
+            'Query split into trigrams for the direct lookup: "xom" -> "ome" -> "met" -> "eth" -> "thi" -> "hin" -> "ing" -> "ng " -> "g u" -> " us" -> "use" -> "sef" -> "efu" -> "ful".',
+        )
+        self.assertEqual(
+            diagnostics.log_story[3],
+            'Candidates containing "xomethin" or "g useful" were checked in this order: remove an extra character, replace one character, then add a missing character.',
+        )
         self.assertTrue(diagnostics.selected_corrections)
         self.assertEqual(
             diagnostics.correction_trace["replace"][0]["pattern"], "?omething useful"
