@@ -8,7 +8,7 @@ truth for the assignment's matching and scoring rules.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator, List, Optional, Sequence, Tuple
 import argparse
@@ -75,7 +75,6 @@ class SearchDiagnostics:
     direct_lookup_ms: float = 0.0
     candidate_and_scoring_ms: float = 0.0
     total_ms: float = 0.0
-    correction_details: List[dict] = field(default_factory=list)
 
     def as_dict(self) -> dict:
         """Return only JSON-safe values for the local diagnostics UI/log."""
@@ -91,29 +90,6 @@ class SearchDiagnostics:
             "direct_lookup_ms": round(self.direct_lookup_ms, 3),
             "candidate_and_scoring_ms": round(self.candidate_and_scoring_ms, 3),
             "total_ms": round(self.total_ms, 3),
-            "correction_details": self.correction_details,
-        }
-
-
-@dataclass(frozen=True)
-class EditExplanation:
-    """One concrete way a fuzzy result was matched to the user's query."""
-
-    operation: str
-    position: int
-    from_character: str
-    to_character: str
-    matched_text: str
-    score: int
-
-    def as_dict(self) -> dict:
-        return {
-            "operation": self.operation,
-            "position": self.position,
-            "from_character": self.from_character,
-            "to_character": self.to_character,
-            "matched_text": self.matched_text,
-            "score": self.score,
         }
 
 
@@ -215,65 +191,6 @@ class OneEditMatcher:
                 best = score
 
         return best
-
-    def best_explanation(self, normalized_sentence: str) -> Optional[EditExplanation]:
-        """Describe the same highest-scoring match used by ``best_score``."""
-
-        if self.query in normalized_sentence:
-            return EditExplanation(
-                "exact", 0, "", "", self.query, 2 * self.length
-            )
-
-        best: Optional[EditExplanation] = None
-
-        for index, (score, candidate) in enumerate(self.deleted_character_candidates):
-            if score < 0 or candidate not in normalized_sentence:
-                continue
-            explanation = EditExplanation(
-                "remove-extra",
-                index + 1,
-                self.query[index],
-                "",
-                candidate,
-                score,
-            )
-            if best is None or explanation.score > best.score:
-                best = explanation
-
-        for index, (score, pattern) in enumerate(self.substitution_patterns):
-            match = pattern.search(normalized_sentence)
-            if score < 0 or match is None:
-                continue
-            matched_text = match.group(0)
-            explanation = EditExplanation(
-                "replace",
-                index + 1,
-                self.query[index],
-                matched_text[index],
-                matched_text,
-                score,
-            )
-            if best is None or explanation.score > best.score:
-                best = explanation
-
-        for index, (score, pattern) in enumerate(self.insertion_patterns):
-            match = pattern.search(normalized_sentence)
-            if score < 0 or match is None:
-                continue
-            matched_text = match.group(0)
-            explanation = EditExplanation(
-                "add-missing",
-                index + 1,
-                "",
-                matched_text[index],
-                matched_text,
-                score,
-            )
-            if best is None or explanation.score > best.score:
-                best = explanation
-
-        return best
-
 
 class AutocompleteEngine:
     """Build once, then answer autocomplete requests with low latency."""
@@ -815,17 +732,6 @@ class AutocompleteEngine:
         if diagnostics is not None:
             diagnostics.candidate_and_scoring_ms = (time.perf_counter() - candidates_started_at) * 1_000
             diagnostics.result_count = len(results)
-            explanation_matcher = OneEditMatcher(normalized_query)
-            for result in results:
-                explanation = explanation_matcher.best_explanation(
-                    normalize_text(result.completed_sentence)
-                )
-                if (
-                    explanation is not None
-                    and explanation.operation != "exact"
-                    and explanation.score == result.score
-                ):
-                    diagnostics.correction_details.append(explanation.as_dict())
             diagnostics.total_ms = (time.perf_counter() - search_started_at) * 1_000
         return results
 

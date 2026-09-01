@@ -52,40 +52,24 @@ function renderDiagnostics(data) {
     return;
   }
 
-  const directEnough = data.search_path === "direct-only";
-  const pathMessages = {
-    "short-query-variants": "Because this is a short query, the engine created legal one-character alternatives and checked them in the index.",
-    "trigram-anchors": "The trigram index first narrowed the corpus to likely sentences, then the engine checked one-character corrections.",
-    "full-corpus-fallback": "For a one-character query, the engine must check the full corpus to preserve the one-typo rule.",
+  const searchPaths = {
+    "direct-only": "Direct lookup only",
+    "short-query-variants": "One-character variant lookup",
+    "trigram-anchors": "FTS trigram anchor lookup",
+    "full-corpus-fallback": "Full-corpus fallback",
+    empty: "No searchable input",
   };
-  const correctionMessages = (data.correction_details || []).slice(0, 3).map((detail) => {
-    if (detail.operation === "replace") {
-      return `Found “${detail.matched_text}” by changing “${detail.from_character}” to “${detail.to_character}” at character ${detail.position} (score ${detail.score}).`;
-    }
-    if (detail.operation === "remove-extra") {
-      return `Found “${detail.matched_text}” by removing the extra “${detail.from_character}” at character ${detail.position} (score ${detail.score}).`;
-    }
-    return `Found “${detail.matched_text}” by adding the missing “${detail.to_character}” at character ${detail.position} (score ${detail.score}).`;
-  });
-  const correctionText = directEnough
-    ? "Skipped. Five direct matches were already available, and they always rank above a one-character correction."
-    : [
-        pathMessages[data.search_path] || "The engine checked the legal one-character correction paths.",
-        `It considered replacing one character, removing one extra character, or adding one missing character.${data.generated_variant_count ? ` For this short query it generated ${data.generated_variant_count} unique legal alternatives.` : ""}`,
-        ...correctionMessages,
-        !correctionMessages.length ? "No corrected result entered the final suggestions." : "",
-      ].filter(Boolean).join(" ");
-  const steps = [
-    ["1", "Prepare the input", `The engine searched for “${data.normalized_query}” after applying the required cleanup rules.`],
-    ["2", "Look for direct matches", `It returned ${data.direct_match_count} direct match${data.direct_match_count === 1 ? "" : "es"} (up to 5) in ${data.direct_lookup_ms} ms.`],
-    ["3", "Check one typing error", correctionText],
-    ["4", "Rank and return", `The visible suggestions are the best legal matches after scoring. Engine time: ${data.total_ms} ms.`],
+  const rows = [
+    ["Input after cleanup", JSON.stringify(data.normalized_query)],
+    ["Direct-match rows returned (max 5)", `${data.direct_match_count} in ${data.direct_lookup_ms} ms`],
+    ["Search path", searchPaths[data.search_path] || data.search_path],
   ];
-  diagnosticsValues.innerHTML = steps.map(([number, title, text]) => `
-    <article class="story-step">
-      <span class="story-number">${number}</span>
-      <div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></div>
-    </article>`).join("");
+  if (data.generated_variant_count) {
+    rows.push(["Legal typo variants generated", data.generated_variant_count]);
+  }
+  rows.push(["Engine total", `${data.total_ms} ms`]);
+  diagnosticsValues.innerHTML = rows.map(([label, value]) => `
+    <div><dt>${escapeHtml(String(label))}</dt><dd>${escapeHtml(String(value))}</dd></div>`).join("");
   diagnosticsPanel.hidden = false;
 }
 

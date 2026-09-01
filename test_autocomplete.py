@@ -93,13 +93,6 @@ class AutocompleteSpecificationTests(unittest.TestCase):
         self.assertGreater(diagnostics.candidate_row_count, 0)
         self.assertEqual(diagnostics.result_count, len(results))
         self.assertGreaterEqual(diagnostics.total_ms, diagnostics.direct_lookup_ms)
-        self.assertTrue(diagnostics.correction_details)
-        explanation = diagnostics.correction_details[0]
-        self.assertEqual(explanation["operation"], "replace")
-        self.assertEqual(explanation["from_character"], "x")
-        self.assertEqual(explanation["to_character"], "s")
-        self.assertEqual(explanation["matched_text"], "something useful")
-        self.assertEqual(explanation["score"], results[0].score)
 
     def test_substitution_penalty_at_every_position(self) -> None:
         target = "abcdefghij"
