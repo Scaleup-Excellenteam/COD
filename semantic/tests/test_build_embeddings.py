@@ -38,6 +38,12 @@ class EmbeddingCliTests(unittest.TestCase):
 
         self.assertEqual(raised.exception.code, 2)
 
+    def test_rpm_must_be_positive(self) -> None:
+        with redirect_stderr(StringIO()), self.assertRaises(SystemExit) as raised:
+            create_parser().parse_args(["--limit", "1", "--rpm", "0"])
+
+        self.assertEqual(raised.exception.code, 2)
+
 
 class InputPreflightTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -159,6 +165,8 @@ class EmbeddingBuilderTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
+        self.sleep = patch("semantic.build_embeddings.time.sleep").start()
+        self.addCleanup(patch.stopall)
 
     def tearDown(self) -> None:
         self.temporary_directory.cleanup()
@@ -195,7 +203,24 @@ class EmbeddingBuilderTests(unittest.TestCase):
         self.assertEqual(output[1]["embedding"], [2.0] * 768)
         self.assertNotIn("title: none | text:", output[0]["sentence"])
         self.assertIn("Selected records: 2", progress.getvalue())
+        self.assertIn("Rate limit: 90 requests/minute", progress.getvalue())
         self.assertIn("Embedding: 2 / 2", progress.getvalue())
+
+    @patch("semantic.build_embeddings.time.monotonic", side_effect=[0.0, 0.0, 0.0, 0.2, 2 / 3])
+    @patch("semantic.build_embeddings.time.sleep")
+    def test_paces_requests_using_remaining_interval(self, sleep, _monotonic) -> None:
+        client = SequenceClient()
+
+        build_embeddings(
+            self.input_path,
+            self.output_path,
+            limit=2,
+            rpm=90,
+            client_factory=lambda: client,
+            progress_stream=StringIO(),
+        )
+
+        sleep.assert_called_once_with(0.4666666666666666)
 
     def test_all_writes_every_record_with_exact_keys_and_no_api_key(self) -> None:
         arguments = create_parser().parse_args(["--all"])

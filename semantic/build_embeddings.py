@@ -9,6 +9,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 
 from semantic.gemini_embeddings import (
     EMBEDDING_DIMENSIONS,
@@ -100,6 +101,7 @@ def build_embeddings(
     input_path: Path,
     output_path: Path = DEFAULT_OUTPUT_PATH,
     limit: Optional[int] = None,
+    rpm: int = 90,
     client_factory: Callable[[], Any] = create_client,
     progress_stream: TextIO = sys.stdout,
 ) -> int:
@@ -107,6 +109,8 @@ def build_embeddings(
 
     input_path = Path(input_path)
     output_path = Path(output_path)
+    if rpm <= 0:
+        raise ValueError("rpm must be a positive integer")
     if input_path.resolve() == output_path.resolve():
         raise EmbeddingBuildError("Input and output paths must be different.")
 
@@ -116,6 +120,7 @@ def build_embeddings(
         file=progress_stream,
         flush=True,
     )
+    print("Rate limit: {0} requests/minute".format(rpm), file=progress_stream, flush=True)
 
     try:
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -131,6 +136,8 @@ def build_embeddings(
     except Exception as error:
         raise EmbeddingBuildError("Could not create the Gemini client.") from error
     temporary_path: Optional[Path] = None
+    request_interval = 60.0 / rpm
+    next_request_allowed = time.monotonic()
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",
@@ -145,6 +152,10 @@ def build_embeddings(
             for position, record in enumerate(
                 _selected_records(input_path, limit), start=1
             ):
+                wait_seconds = next_request_allowed - time.monotonic()
+                if wait_seconds > 0:
+                    time.sleep(wait_seconds)
+                request_started = time.monotonic()
                 try:
                     embedding = embed_sentence(client, record["sentence"])
                 except Exception as error:
@@ -153,6 +164,7 @@ def build_embeddings(
                             position
                         )
                     ) from error
+                next_request_allowed = request_started + request_interval
 
                 output_record = {
                     "id": record["id"],
@@ -219,6 +231,12 @@ def create_parser() -> argparse.ArgumentParser:
         type=_positive_integer,
         help="Embed only the first N dataset records.",
     )
+    parser.add_argument(
+        "--rpm",
+        type=_positive_integer,
+        default=90,
+        help="Maximum sequential Gemini requests per minute (default: 90).",
+    )
     selection.add_argument(
         "--all",
         action="store_true",
@@ -235,6 +253,7 @@ def main() -> int:
             arguments.input,
             arguments.output,
             limit=limit,
+            rpm=arguments.rpm,
         )
     except (EmbeddingBuildError, ValueError) as error:
         print("error: {0}".format(error), file=sys.stderr)

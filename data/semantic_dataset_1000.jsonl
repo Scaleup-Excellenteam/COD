@@ -1,0 +1,1000 @@
+{"id": 1, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 1}
+{"id": 2, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 3}
+{"id": 3, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 5}
+{"id": 4, "sentence": "Page 1", "source_text": "0130903086.txt", "offset": 7}
+{"id": 5, "sentence": "O", "source_text": "0130903086.txt", "offset": 9}
+{"id": 6, "sentence": "N", "source_text": "0130903086.txt", "offset": 11}
+{"id": 7, "sentence": "E", "source_text": "0130903086.txt", "offset": 13}
+{"id": 8, "sentence": "Introduction to", "source_text": "0130903086.txt", "offset": 15}
+{"id": 9, "sentence": "Networking and", "source_text": "0130903086.txt", "offset": 16}
+{"id": 10, "sentence": "the OSI Model", "source_text": "0130903086.txt", "offset": 17}
+{"id": 11, "sentence": "In This Chapter", "source_text": "0130903086.txt", "offset": 18}
+{"id": 12, "sentence": "◆ Local Area Networks", "source_text": "0130903086.txt", "offset": 19}
+{"id": 13, "sentence": "◆ Wide Area Networks", "source_text": "0130903086.txt", "offset": 20}
+{"id": 14, "sentence": "◆ Internetworking", "source_text": "0130903086.txt", "offset": 21}
+{"id": 15, "sentence": "◆ The Seven Layers of", "source_text": "0130903086.txt", "offset": 22}
+{"id": 16, "sentence": "the OSI Model", "source_text": "0130903086.txt", "offset": 24}
+{"id": 17, "sentence": "In this chapter, we begin our journey toward the CCNA", "source_text": "0130903086.txt", "offset": 26}
+{"id": 18, "sentence": "certification by examining some networking concepts", "source_text": "0130903086.txt", "offset": 27}
+{"id": 19, "sentence": "key to working with Cisco routers. The most important", "source_text": "0130903086.txt", "offset": 28}
+{"id": 20, "sentence": "concept is a discussion of the OSI model and how data", "source_text": "0130903086.txt", "offset": 29}
+{"id": 21, "sentence": "flows across a network. Once the OSI model is understood, it will be easier to design, use, and, especially,", "source_text": "0130903086.txt", "offset": 30}
+{"id": 22, "sentence": "troubleshoot Cisco networks.", "source_text": "0130903086.txt", "offset": 31}
+{"id": 23, "sentence": "Introduction to Networking", "source_text": "0130903086.txt", "offset": 33}
+{"id": 24, "sentence": "In the early days of computing, there were mainframe computers. These computers were large and centrally located,", "source_text": "0130903086.txt", "offset": 34}
+{"id": 25, "sentence": "usually in a very cold and climate-controlled environment.", "source_text": "0130903086.txt", "offset": 35}
+{"id": 26, "sentence": "Although processing was performed on the mainframe,", "source_text": "0130903086.txt", "offset": 36}
+{"id": 27, "sentence": "the average user did not walk up to it and start an application. Instead, he or she would sit at a terminal that was connected to the mainframe by some type of cabling. This", "source_text": "0130903086.txt", "offset": 37}
+{"id": 28, "sentence": "terminal, located in a remote location, was the gateway to", "source_text": "0130903086.txt", "offset": 38}
+{"id": 29, "sentence": "the processing power of the mainframe. The terminal performed very little work on its own. In fact, it merely displayed data on the monitor and processed keystrokes to", "source_text": "0130903086.txt", "offset": 39}
+{"id": 30, "sentence": "1", "source_text": "0130903086.txt", "offset": 41}
+{"id": 31, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 43}
+{"id": 32, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 45}
+{"id": 33, "sentence": "2", "source_text": "0130903086.txt", "offset": 47}
+{"id": 34, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 49}
+{"id": 35, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 51}
+{"id": 36, "sentence": "Page 2", "source_text": "0130903086.txt", "offset": 53}
+{"id": 37, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 57}
+{"id": 38, "sentence": "send back to the mainframe. For this reason, these terminals were often", "source_text": "0130903086.txt", "offset": 59}
+{"id": 39, "sentence": "called dumb terminals.", "source_text": "0130903086.txt", "offset": 60}
+{"id": 40, "sentence": "As time progressed, more and more users were connecting to the mainframe computer through the terminals. This increased the load on the mainframe, thereby slowing productivity. The mainframe computers were", "source_text": "0130903086.txt", "offset": 61}
+{"id": 41, "sentence": "continually being enhanced and upgraded to keep up with the processing", "source_text": "0130903086.txt", "offset": 62}
+{"id": 42, "sentence": "demand.", "source_text": "0130903086.txt", "offset": 63}
+{"id": 43, "sentence": "Technology started producing smarter terminals to decrease the load on", "source_text": "0130903086.txt", "offset": 64}
+{"id": 44, "sentence": "the mainframe. When the personal computer (PC) became a reality in the late", "source_text": "0130903086.txt", "offset": 65}
+{"id": 45, "sentence": "1980s, the paradigm began to shift. PCs could connect to the mainframe in", "source_text": "0130903086.txt", "offset": 66}
+{"id": 46, "sentence": "place of the dumb terminals, but more importantly, they could process data", "source_text": "0130903086.txt", "offset": 67}
+{"id": 47, "sentence": "on their own. The PC revolution began, and the increasing importance of the", "source_text": "0130903086.txt", "offset": 68}
+{"id": 48, "sentence": "home and office computer was realized.", "source_text": "0130903086.txt", "offset": 69}
+{"id": 49, "sentence": "As PCs began to work in conjunction with the mainframe, new technology was required to efficiently connect them. Local Area Networks, or LANs,", "source_text": "0130903086.txt", "offset": 70}
+{"id": 50, "sentence": "became the term used to describe the way in which computers were connected together to share data. LANs were implemented in a business using", "source_text": "0130903086.txt", "offset": 71}
+{"id": 51, "sentence": "technologies such as Ethernet and Token Ring to connect computers together", "source_text": "0130903086.txt", "offset": 72}
+{"id": 52, "sentence": "using Network Interface Cards, or NICs. LAN connectivity became a new industry market, and new businesses worldwide started operations.", "source_text": "0130903086.txt", "offset": 73}
+{"id": 53, "sentence": "As more and more LANs became operational, it became necessary to", "source_text": "0130903086.txt", "offset": 74}
+{"id": 54, "sentence": "link these networks together across floors, buildings, cities, and even countries; hence, the introduction of the Wide Area Network, or WAN. A WAN is a", "source_text": "0130903086.txt", "offset": 75}
+{"id": 55, "sentence": "means of connecting LANs together across a distance boundary. Typical WAN", "source_text": "0130903086.txt", "offset": 76}
+{"id": 56, "sentence": "connectivity was accomplished through phone lines.", "source_text": "0130903086.txt", "offset": 77}
+{"id": 57, "sentence": "Today, computers throughout the world are connected through WANs,", "source_text": "0130903086.txt", "offset": 78}
+{"id": 58, "sentence": "LANs, and various combinations of the two. Perhaps the most well-known", "source_text": "0130903086.txt", "offset": 79}
+{"id": 59, "sentence": "network is the Internet. The means of connecting all these networks together", "source_text": "0130903086.txt", "offset": 80}
+{"id": 60, "sentence": "to achieve a desired goal is called internetworking, and this is where Cisco", "source_text": "0130903086.txt", "offset": 81}
+{"id": 61, "sentence": "has positioned itself as the world leader.", "source_text": "0130903086.txt", "offset": 82}
+{"id": 62, "sentence": "The OSI Model", "source_text": "0130903086.txt", "offset": 84}
+{"id": 63, "sentence": "Networking evolved from the basic principle of moving data from one computer to another. The first method involved copying data to a storage media", "source_text": "0130903086.txt", "offset": 85}
+{"id": 64, "sentence": "such as a floppy disk and then taking that storage media to another computer", "source_text": "0130903086.txt", "offset": 86}
+{"id": 65, "sentence": "and copying the data. This was charmingly referred to as sneaker-net. As", "source_text": "0130903086.txt", "offset": 87}
+{"id": 66, "sentence": "more efficient means were discovered—namely, electricity on a copper", "source_text": "0130903086.txt", "offset": 88}
+{"id": 67, "sentence": "wire—networking became more popular. However, there were no standards", "source_text": "0130903086.txt", "offset": 89}
+{"id": 68, "sentence": "in place. This meant that one network manufacturer implemented a different", "source_text": "0130903086.txt", "offset": 90}
+{"id": 69, "sentence": "means of data transfer than another. If you had an IBM network, you purchased only IBM network devices.", "source_text": "0130903086.txt", "offset": 91}
+{"id": 70, "sentence": "In 1984, a group known as the International Organization for Standardization (ISO) created a model called the Open Systems Interconnect (OSI).", "source_text": "0130903086.txt", "offset": 92}
+{"id": 71, "sentence": "This model defined guidelines for interoperability between network manufac-", "source_text": "0130903086.txt", "offset": 93}
+{"id": 72, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 95}
+{"id": 73, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 97}
+{"id": 74, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 99}
+{"id": 75, "sentence": "Page 3", "source_text": "0130903086.txt", "offset": 101}
+{"id": 76, "sentence": "The OSI Model", "source_text": "0130903086.txt", "offset": 103}
+{"id": 77, "sentence": "3", "source_text": "0130903086.txt", "offset": 105}
+{"id": 78, "sentence": "turers. A company could now mix and match network devices and protocols", "source_text": "0130903086.txt", "offset": 107}
+{"id": 79, "sentence": "from various manufacturers in its own network without being locked into", "source_text": "0130903086.txt", "offset": 108}
+{"id": 80, "sentence": "using a single vendor. It also had a great side effect: Competition meant lower", "source_text": "0130903086.txt", "offset": 109}
+{"id": 81, "sentence": "prices.", "source_text": "0130903086.txt", "offset": 110}
+{"id": 82, "sentence": "Although the OSI model defined a set of standards, it is important to", "source_text": "0130903086.txt", "offset": 111}
+{"id": 83, "sentence": "note that it is merely a model. Many other models exist in the networking industry; however, understanding a single model gives us the capability of understanding other models in the future. The OSI model is the most widely", "source_text": "0130903086.txt", "offset": 112}
+{"id": 84, "sentence": "taught as the foundation for this knowledge.", "source_text": "0130903086.txt", "offset": 113}
+{"id": 85, "sentence": "Why Use a Layered Model?", "source_text": "0130903086.txt", "offset": 115}
+{"id": 86, "sentence": "By using a layered model, we can categorize the procedures that are necessary to transmit data across a network. Let’s explore this in more detail. Imagine that we are developers and we are about to create a new protocol for", "source_text": "0130903086.txt", "offset": 116}
+{"id": 87, "sentence": "communication across a network.", "source_text": "0130903086.txt", "offset": 117}
+{"id": 88, "sentence": "First, we need to define the term protocol: A protocol is a set of", "source_text": "0130903086.txt", "offset": 118}
+{"id": 89, "sentence": "guidelines or rules of communication. Some think of a protocol as a dialect", "source_text": "0130903086.txt", "offset": 119}
+{"id": 90, "sentence": "of a language; this is erroneous. The British and the Americans both", "source_text": "0130903086.txt", "offset": 120}
+{"id": 91, "sentence": "speak the same language: English. However, certain words differ in meaning", "source_text": "0130903086.txt", "offset": 121}
+{"id": 92, "sentence": "between the two countries. The timing of the exchange of words between the two cultures can also lead to difficulties in complete understanding. A protocol, then, is more than just the words of computers. It", "source_text": "0130903086.txt", "offset": 122}
+{"id": 93, "sentence": "also includes the timing and the same dictionary so that at any time, both", "source_text": "0130903086.txt", "offset": 123}
+{"id": 94, "sentence": "computers using the same protocol have an exact, complete understanding", "source_text": "0130903086.txt", "offset": 124}
+{"id": 95, "sentence": "of each other.", "source_text": "0130903086.txt", "offset": 125}
+{"id": 96, "sentence": "Developing a new protocol without a model would be a tedious and", "source_text": "0130903086.txt", "offset": 126}
+{"id": 97, "sentence": "time-consuming task. We would need to reinvent the wheel by recreating", "source_text": "0130903086.txt", "offset": 127}
+{"id": 98, "sentence": "work that has already been done by other developers. We could save time by", "source_text": "0130903086.txt", "offset": 128}
+{"id": 99, "sentence": "cutting and pasting the code, but we would still need to do extensive testing.", "source_text": "0130903086.txt", "offset": 129}
+{"id": 100, "sentence": "Further, when we needed to update the protocol, we would have to redesign", "source_text": "0130903086.txt", "offset": 130}
+{"id": 101, "sentence": "and retest the entire protocol.", "source_text": "0130903086.txt", "offset": 131}
+{"id": 102, "sentence": "However, if we were to use a layered design, we could separate the", "source_text": "0130903086.txt", "offset": 132}
+{"id": 103, "sentence": "processes into specific layers. We could then design, enhance, and test each", "source_text": "0130903086.txt", "offset": 133}
+{"id": 104, "sentence": "individual layer. As the process continued, we would have a complete protocol based on a layered model. When we needed to update code, we would", "source_text": "0130903086.txt", "offset": 134}
+{"id": 105, "sentence": "only have to modify the one layer that needed the updating; the rest of the", "source_text": "0130903086.txt", "offset": 135}
+{"id": 106, "sentence": "layers would not be affected. This allows us to enhance specific functions", "source_text": "0130903086.txt", "offset": 136}
+{"id": 107, "sentence": "easier and quicker.", "source_text": "0130903086.txt", "offset": 137}
+{"id": 108, "sentence": "Further, by using a layered model, we could then license our protocol", "source_text": "0130903086.txt", "offset": 138}
+{"id": 109, "sentence": "to other developers for use in their own networks. If the protocol did not", "source_text": "0130903086.txt", "offset": 139}
+{"id": 110, "sentence": "work on their chosen hardware platform, they could replace one of the layers", "source_text": "0130903086.txt", "offset": 140}
+{"id": 111, "sentence": "with their own version, thereby creating multivendor compatibility.", "source_text": "0130903086.txt", "offset": 141}
+{"id": 112, "sentence": "If we did decide to enhance one of the layers, we could take just that", "source_text": "0130903086.txt", "offset": 142}
+{"id": 113, "sentence": "specific layer and redistribute it to all the developers, thereby making our", "source_text": "0130903086.txt", "offset": 143}
+{"id": 114, "sentence": "protocol even better.", "source_text": "0130903086.txt", "offset": 144}
+{"id": 115, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 146}
+{"id": 116, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 148}
+{"id": 117, "sentence": "4", "source_text": "0130903086.txt", "offset": 150}
+{"id": 118, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 152}
+{"id": 119, "sentence": "Page 4", "source_text": "0130903086.txt", "offset": 154}
+{"id": 120, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 156}
+{"id": 121, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 160}
+{"id": 122, "sentence": "To summarize, layered modeling allows us to:", "source_text": "0130903086.txt", "offset": 162}
+{"id": 123, "sentence": "• Create a protocol that can be designed and tested in stages, which, in", "source_text": "0130903086.txt", "offset": 163}
+{"id": 124, "sentence": "turn, reduces the complexity", "source_text": "0130903086.txt", "offset": 164}
+{"id": 125, "sentence": "• Enhance functionality of the protocol without adversely affecting the", "source_text": "0130903086.txt", "offset": 165}
+{"id": 126, "sentence": "other layers", "source_text": "0130903086.txt", "offset": 166}
+{"id": 127, "sentence": "• Provide multivendor compatibility", "source_text": "0130903086.txt", "offset": 167}
+{"id": 128, "sentence": "• Allow for easier troubleshooting by locating the specific layer causing", "source_text": "0130903086.txt", "offset": 168}
+{"id": 129, "sentence": "the problem", "source_text": "0130903086.txt", "offset": 169}
+{"id": 130, "sentence": "How Does a Model Work?", "source_text": "0130903086.txt", "offset": 171}
+{"id": 131, "sentence": "Before defining how a model works, we must clarify one thing. The OSI", "source_text": "0130903086.txt", "offset": 172}
+{"id": 132, "sentence": "model defines what each layer should do—it does not tell you how to do it.", "source_text": "0130903086.txt", "offset": 173}
+{"id": 133, "sentence": "This allows developers the freedom to choose the best method they can design.", "source_text": "0130903086.txt", "offset": 174}
+{"id": 134, "sentence": "The OSI model is divided into seven layers. Figure 1–1 lists the name", "source_text": "0130903086.txt", "offset": 175}
+{"id": 135, "sentence": "and order of each layer. Notice that the bottom layer is identified as the first", "source_text": "0130903086.txt", "offset": 176}
+{"id": 136, "sentence": "layer.", "source_text": "0130903086.txt", "offset": 177}
+{"id": 137, "sentence": "Application", "source_text": "0130903086.txt", "offset": 179}
+{"id": 138, "sentence": "Layer 7", "source_text": "0130903086.txt", "offset": 181}
+{"id": 139, "sentence": "Presentation", "source_text": "0130903086.txt", "offset": 183}
+{"id": 140, "sentence": "Layer 6", "source_text": "0130903086.txt", "offset": 185}
+{"id": 141, "sentence": "Session", "source_text": "0130903086.txt", "offset": 187}
+{"id": 142, "sentence": "Layer 5", "source_text": "0130903086.txt", "offset": 189}
+{"id": 143, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 191}
+{"id": 144, "sentence": "Layer 4", "source_text": "0130903086.txt", "offset": 193}
+{"id": 145, "sentence": "Network", "source_text": "0130903086.txt", "offset": 195}
+{"id": 146, "sentence": "Layer 3", "source_text": "0130903086.txt", "offset": 197}
+{"id": 147, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 199}
+{"id": 148, "sentence": "Layer 2", "source_text": "0130903086.txt", "offset": 201}
+{"id": 149, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 203}
+{"id": 150, "sentence": "Layer 1", "source_text": "0130903086.txt", "offset": 205}
+{"id": 151, "sentence": "FIGURE 1–1", "source_text": "0130903086.txt", "offset": 207}
+{"id": 152, "sentence": "The seven layers of the OSI model", "source_text": "0130903086.txt", "offset": 209}
+{"id": 153, "sentence": "It is important to remember the order of the layers in the OSI model.", "source_text": "0130903086.txt", "offset": 211}
+{"id": 154, "sentence": "Doing so creates a better understanding of the network data flow. It is also", "source_text": "0130903086.txt", "offset": 212}
+{"id": 155, "sentence": "needed to pass an exam. Many acrostics can be used to remember the order,", "source_text": "0130903086.txt", "offset": 213}
+{"id": 156, "sentence": "but possibly the most common is", "source_text": "0130903086.txt", "offset": 214}
+{"id": 157, "sentence": "Please", "source_text": "0130903086.txt", "offset": 215}
+{"id": 158, "sentence": "Do", "source_text": "0130903086.txt", "offset": 216}
+{"id": 159, "sentence": "Not", "source_text": "0130903086.txt", "offset": 217}
+{"id": 160, "sentence": "Throw", "source_text": "0130903086.txt", "offset": 218}
+{"id": 161, "sentence": "Sausage", "source_text": "0130903086.txt", "offset": 219}
+{"id": 162, "sentence": "Pizzas", "source_text": "0130903086.txt", "offset": 220}
+{"id": 163, "sentence": "Away", "source_text": "0130903086.txt", "offset": 221}
+{"id": 164, "sentence": "(Physical", "source_text": "0130903086.txt", "offset": 223}
+{"id": 165, "sentence": "(Data Link", "source_text": "0130903086.txt", "offset": 224}
+{"id": 166, "sentence": "(Network", "source_text": "0130903086.txt", "offset": 225}
+{"id": 167, "sentence": "(Transport", "source_text": "0130903086.txt", "offset": 226}
+{"id": 168, "sentence": "(Session", "source_text": "0130903086.txt", "offset": 227}
+{"id": 169, "sentence": "(Presentation", "source_text": "0130903086.txt", "offset": 228}
+{"id": 170, "sentence": "(Application", "source_text": "0130903086.txt", "offset": 229}
+{"id": 171, "sentence": "Layer", "source_text": "0130903086.txt", "offset": 231}
+{"id": 172, "sentence": "Layer", "source_text": "0130903086.txt", "offset": 232}
+{"id": 173, "sentence": "Layer", "source_text": "0130903086.txt", "offset": 233}
+{"id": 174, "sentence": "Layer", "source_text": "0130903086.txt", "offset": 234}
+{"id": 175, "sentence": "Layer", "source_text": "0130903086.txt", "offset": 235}
+{"id": 176, "sentence": "Layer", "source_text": "0130903086.txt", "offset": 236}
+{"id": 177, "sentence": "Layer", "source_text": "0130903086.txt", "offset": 237}
+{"id": 178, "sentence": "1)", "source_text": "0130903086.txt", "offset": 239}
+{"id": 179, "sentence": "2)", "source_text": "0130903086.txt", "offset": 240}
+{"id": 180, "sentence": "3)", "source_text": "0130903086.txt", "offset": 241}
+{"id": 181, "sentence": "4)", "source_text": "0130903086.txt", "offset": 242}
+{"id": 182, "sentence": "5)", "source_text": "0130903086.txt", "offset": 243}
+{"id": 183, "sentence": "6)", "source_text": "0130903086.txt", "offset": 244}
+{"id": 184, "sentence": "7)", "source_text": "0130903086.txt", "offset": 245}
+{"id": 185, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 247}
+{"id": 186, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 249}
+{"id": 187, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 251}
+{"id": 188, "sentence": "Page 5", "source_text": "0130903086.txt", "offset": 253}
+{"id": 189, "sentence": "The OSI Model", "source_text": "0130903086.txt", "offset": 255}
+{"id": 190, "sentence": "5", "source_text": "0130903086.txt", "offset": 257}
+{"id": 191, "sentence": "If we wish to use this acrostic to remember the order of the OSI model,", "source_text": "0130903086.txt", "offset": 259}
+{"id": 192, "sentence": "there are two important items to note. First, this acrostic starts from the bottom (Layer 1) and moves toward the top. Second, there are two Ps, so we", "source_text": "0130903086.txt", "offset": 260}
+{"id": 193, "sentence": "have to remember which is the Physical and which is the Presentation.", "source_text": "0130903086.txt", "offset": 261}
+{"id": 194, "sentence": "Each layer is separated, or encapsulated, from each other layer. This", "source_text": "0130903086.txt", "offset": 262}
+{"id": 195, "sentence": "means that each layer can function on its own. Each layer thinks it is talking", "source_text": "0130903086.txt", "offset": 263}
+{"id": 196, "sentence": "Application", "source_text": "0130903086.txt", "offset": 265}
+{"id": 197, "sentence": "FIGURE 1–2", "source_text": "0130903086.txt", "offset": 266}
+{"id": 198, "sentence": "Application", "source_text": "0130903086.txt", "offset": 268}
+{"id": 199, "sentence": "Virtual link between application layers", "source_text": "0130903086.txt", "offset": 270}
+{"id": 200, "sentence": "directly to the same layer on the remote computer (see Figure 1–2) through a", "source_text": "0130903086.txt", "offset": 272}
+{"id": 201, "sentence": "virtual link. Furthermore, each layer can only communicate with the layers", "source_text": "0130903086.txt", "offset": 273}
+{"id": 202, "sentence": "above and below it. In fact, the layer doesn’t know that any other layers even", "source_text": "0130903086.txt", "offset": 274}
+{"id": 203, "sentence": "exist. For example, notice in Figure 1–3 that the Transport layer can communicate only with the Network and the Session layers.", "source_text": "0130903086.txt", "offset": 275}
+{"id": 204, "sentence": "Application", "source_text": "0130903086.txt", "offset": 277}
+{"id": 205, "sentence": "Presentation", "source_text": "0130903086.txt", "offset": 278}
+{"id": 206, "sentence": "Session", "source_text": "0130903086.txt", "offset": 279}
+{"id": 207, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 281}
+{"id": 208, "sentence": "Network", "source_text": "0130903086.txt", "offset": 283}
+{"id": 209, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 284}
+{"id": 210, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 285}
+{"id": 211, "sentence": "FIGURE 1–3", "source_text": "0130903086.txt", "offset": 286}
+{"id": 212, "sentence": "Each layer knows only about the layer above and below", "source_text": "0130903086.txt", "offset": 288}
+{"id": 213, "sentence": "Finally, the flow of data starts at the Application layer of the sending", "source_text": "0130903086.txt", "offset": 290}
+{"id": 214, "sentence": "computer, flows down the layers, across the wire to the receiving computer,", "source_text": "0130903086.txt", "offset": 291}
+{"id": 215, "sentence": "and then back up the layers to the Application layer (see Figure 1–4).", "source_text": "0130903086.txt", "offset": 292}
+{"id": 216, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 294}
+{"id": 217, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 296}
+{"id": 218, "sentence": "6", "source_text": "0130903086.txt", "offset": 298}
+{"id": 219, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 300}
+{"id": 220, "sentence": "Page 6", "source_text": "0130903086.txt", "offset": 302}
+{"id": 221, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 304}
+{"id": 222, "sentence": "FIGURE 1–4", "source_text": "0130903086.txt", "offset": 306}
+{"id": 223, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 310}
+{"id": 224, "sentence": "Sending Computer", "source_text": "0130903086.txt", "offset": 312}
+{"id": 225, "sentence": "Receiving Computer", "source_text": "0130903086.txt", "offset": 314}
+{"id": 226, "sentence": "Application", "source_text": "0130903086.txt", "offset": 316}
+{"id": 227, "sentence": "Application", "source_text": "0130903086.txt", "offset": 318}
+{"id": 228, "sentence": "Presentation", "source_text": "0130903086.txt", "offset": 320}
+{"id": 229, "sentence": "Presentation", "source_text": "0130903086.txt", "offset": 322}
+{"id": 230, "sentence": "Session", "source_text": "0130903086.txt", "offset": 324}
+{"id": 231, "sentence": "Session", "source_text": "0130903086.txt", "offset": 326}
+{"id": 232, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 328}
+{"id": 233, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 330}
+{"id": 234, "sentence": "Network", "source_text": "0130903086.txt", "offset": 332}
+{"id": 235, "sentence": "Network", "source_text": "0130903086.txt", "offset": 334}
+{"id": 236, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 336}
+{"id": 237, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 338}
+{"id": 238, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 340}
+{"id": 239, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 342}
+{"id": 240, "sentence": "Flow of data from sending computer to receiving computer", "source_text": "0130903086.txt", "offset": 344}
+{"id": 241, "sentence": "Each layer has a specific function for which it is responsible. Although", "source_text": "0130903086.txt", "offset": 346}
+{"id": 242, "sentence": "the layers start at the bottom, we will examine the layers starting at the top.", "source_text": "0130903086.txt", "offset": 347}
+{"id": 243, "sentence": "Application Layer (Layer 7)", "source_text": "0130903086.txt", "offset": 349}
+{"id": 244, "sentence": "The Application layer is a buffer between the user interface (what the user", "source_text": "0130903086.txt", "offset": 350}
+{"id": 245, "sentence": "uses to perform work) and the network application. The network application", "source_text": "0130903086.txt", "offset": 351}
+{"id": 246, "sentence": "may be a part of the user application or an Application Programming Interface (API) that is called by the user’s application.", "source_text": "0130903086.txt", "offset": 352}
+{"id": 247, "sentence": "The Application layer is responsible for finding a communication partner on the network. Once a partner is found, it is then responsible for ensuring that there is sufficient network bandwidth to deliver the data.", "source_text": "0130903086.txt", "offset": 353}
+{"id": 248, "sentence": "This layer may also be responsible for synchronizing communication", "source_text": "0130903086.txt", "offset": 354}
+{"id": 249, "sentence": "and providing error checking between the two partners. This ensures that the", "source_text": "0130903086.txt", "offset": 355}
+{"id": 250, "sentence": "application is either sending or receiving, but not both, and that the data", "source_text": "0130903086.txt", "offset": 356}
+{"id": 251, "sentence": "transmitted is the same data received.", "source_text": "0130903086.txt", "offset": 357}
+{"id": 252, "sentence": "Typical applications include a client/server application, an e-mail application, and an application to transfer files using FTP or HTTP.", "source_text": "0130903086.txt", "offset": 358}
+{"id": 253, "sentence": "Presentation Layer (Layer 6)", "source_text": "0130903086.txt", "offset": 360}
+{"id": 254, "sentence": "The Presentation layer is responsible for the presentation of data to the Application layer. This presentation may take the form of many structures.", "source_text": "0130903086.txt", "offset": 361}
+{"id": 255, "sentence": "For example, when communicating from a PC to a mainframe, data may", "source_text": "0130903086.txt", "offset": 362}
+{"id": 256, "sentence": "need to be converted between ASCII and EBCDIC (a different character formatting method used on many mainframes).", "source_text": "0130903086.txt", "offset": 363}
+{"id": 257, "sentence": "Another structure of data includes multimedia formats used for enhancing our computer experiences. The World Wide Web (WWW) is a fantastic", "source_text": "0130903086.txt", "offset": 364}
+{"id": 258, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 366}
+{"id": 259, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 368}
+{"id": 260, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 370}
+{"id": 261, "sentence": "Page 7", "source_text": "0130903086.txt", "offset": 372}
+{"id": 262, "sentence": "The OSI Model", "source_text": "0130903086.txt", "offset": 374}
+{"id": 263, "sentence": "7", "source_text": "0130903086.txt", "offset": 376}
+{"id": 264, "sentence": "exchange of information that uses many types of multimedia. The Presentation layer must ensure that the application can view the appropriate data", "source_text": "0130903086.txt", "offset": 378}
+{"id": 265, "sentence": "when it is reassembled. Graphic files such as PICT, JPEG, TIFF, and GIF, and", "source_text": "0130903086.txt", "offset": 379}
+{"id": 266, "sentence": "video and sound files such as MPEG and Apple’s QuickTime are examples of", "source_text": "0130903086.txt", "offset": 380}
+{"id": 267, "sentence": "Presentation layer responsibilities.", "source_text": "0130903086.txt", "offset": 381}
+{"id": 268, "sentence": "One final data structure is data encryption. Sometimes, it is vital that we", "source_text": "0130903086.txt", "offset": 382}
+{"id": 269, "sentence": "can send data across a network without someone being able to view our data,", "source_text": "0130903086.txt", "offset": 383}
+{"id": 270, "sentence": "or snoop it. Data encryption is the method that allows us to accomplish this.", "source_text": "0130903086.txt", "offset": 384}
+{"id": 271, "sentence": "Session Layer (Layer 5)", "source_text": "0130903086.txt", "offset": 386}
+{"id": 272, "sentence": "The Session layer sets up communications between the two partners. This", "source_text": "0130903086.txt", "offset": 387}
+{"id": 273, "sentence": "layer decides on the method of communication: half-duplex or full-duplex.", "source_text": "0130903086.txt", "offset": 388}
+{"id": 274, "sentence": "Half-duplex is the method of sending data only when the other computer is", "source_text": "0130903086.txt", "offset": 389}
+{"id": 275, "sentence": "finished. We can use the telephone to illustrate these methods. As a polite", "source_text": "0130903086.txt", "offset": 390}
+{"id": 276, "sentence": "person (note the word polite), we wait until the other person is finished", "source_text": "0130903086.txt", "offset": 391}
+{"id": 277, "sentence": "speaking before we respond. This is an example of half-duplex. If we were", "source_text": "0130903086.txt", "offset": 392}
+{"id": 278, "sentence": "to both start speaking at the same time, it would take a trained ear to actually", "source_text": "0130903086.txt", "offset": 393}
+{"id": 279, "sentence": "listen to the conversation. This is an example of full-duplex, where both sides", "source_text": "0130903086.txt", "offset": 394}
+{"id": 280, "sentence": "communicate as fast as they are able, at the same time.", "source_text": "0130903086.txt", "offset": 395}
+{"id": 281, "sentence": "The Session layer starts a session by establishing the initial connection", "source_text": "0130903086.txt", "offset": 396}
+{"id": 282, "sentence": "to the communication partner. This initial dialog allows the partners to decide", "source_text": "0130903086.txt", "offset": 397}
+{"id": 283, "sentence": "on the communication method and the protocol to use. When this is finished,", "source_text": "0130903086.txt", "offset": 398}
+{"id": 284, "sentence": "data transfer can occur between the partners. Finally, after all data has been", "source_text": "0130903086.txt", "offset": 399}
+{"id": 285, "sentence": "transferred, the partners disconnect. Using our example of the telephone, this", "source_text": "0130903086.txt", "offset": 400}
+{"id": 286, "sentence": "would be similar to me calling you. The initial “Hello” establishes the protocol (roughly equivalent to speaking English versus Spanish) and the method", "source_text": "0130903086.txt", "offset": 401}
+{"id": 287, "sentence": "of communication, half-duplex. After we discuss the new products that Cisco", "source_text": "0130903086.txt", "offset": 402}
+{"id": 288, "sentence": "is introducing and how they will make our lives better (the data transfer), we", "source_text": "0130903086.txt", "offset": 403}
+{"id": 289, "sentence": "then conclude our conversation by saying “Good-bye.”", "source_text": "0130903086.txt", "offset": 404}
+{"id": 290, "sentence": "In the early days of communication, reliability of data across the network was a major concern. With today’s technology, this is less of a concern,", "source_text": "0130903086.txt", "offset": 405}
+{"id": 291, "sentence": "but the Session layer has some error checking included. In order to ensure", "source_text": "0130903086.txt", "offset": 406}
+{"id": 292, "sentence": "that the data has been transferred correctly, the Session layer sets up a checkpoint in the data stream. This checkpoint is a means for the receiving computer to acknowledge to the sender that the data has been received. If data is", "source_text": "0130903086.txt", "offset": 407}
+{"id": 293, "sentence": "missed, the checkpoint acknowledgment back to the sender would indicate", "source_text": "0130903086.txt", "offset": 408}
+{"id": 294, "sentence": "that data is missing, and the sender would then decide what data was missed,", "source_text": "0130903086.txt", "offset": 409}
+{"id": 295, "sentence": "and resend it.", "source_text": "0130903086.txt", "offset": 410}
+{"id": 296, "sentence": "When the sender and receiver negotiate the use of checkpoints in the", "source_text": "0130903086.txt", "offset": 411}
+{"id": 297, "sentence": "data stream, this is called connection-oriented service. We use this method", "source_text": "0130903086.txt", "offset": 412}
+{"id": 298, "sentence": "when reliable delivery of data is required. However, there are times when reliable data is not needed, so to reduce network bandwidth, the checkpoints", "source_text": "0130903086.txt", "offset": 413}
+{"id": 299, "sentence": "will not be used. The sender sends the data through the network and does", "source_text": "0130903086.txt", "offset": 414}
+{"id": 300, "sentence": "not wait for any acknowledgments from the receiver. It is the responsibility of", "source_text": "0130903086.txt", "offset": 415}
+{"id": 301, "sentence": "the Application layer to decide if data is missing. Although less reliable, it is a", "source_text": "0130903086.txt", "offset": 416}
+{"id": 302, "sentence": "quicker method of sending data.", "source_text": "0130903086.txt", "offset": 417}
+{"id": 303, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 419}
+{"id": 304, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 421}
+{"id": 305, "sentence": "8", "source_text": "0130903086.txt", "offset": 423}
+{"id": 306, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 425}
+{"id": 307, "sentence": "Page 8", "source_text": "0130903086.txt", "offset": 427}
+{"id": 308, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 429}
+{"id": 309, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 433}
+{"id": 310, "sentence": "Examples of the Session layer protocol include:", "source_text": "0130903086.txt", "offset": 435}
+{"id": 311, "sentence": "• SQL (Structured Query Language). A database language originally developed by IBM.", "source_text": "0130903086.txt", "offset": 436}
+{"id": 312, "sentence": "• RPC (Remote Procedure Call). A method of running routines on a server", "source_text": "0130903086.txt", "offset": 437}
+{"id": 313, "sentence": "called from the client.", "source_text": "0130903086.txt", "offset": 438}
+{"id": 314, "sentence": "• X Windows. A graphical-based system used to communicate with Unix", "source_text": "0130903086.txt", "offset": 439}
+{"id": 315, "sentence": "servers.", "source_text": "0130903086.txt", "offset": 440}
+{"id": 316, "sentence": "• NFS (Network File System). A method of accessing resources on servers.", "source_text": "0130903086.txt", "offset": 441}
+{"id": 317, "sentence": "Transport Layer (Layer 4)", "source_text": "0130903086.txt", "offset": 443}
+{"id": 318, "sentence": "Although the Session layer is responsible for deciding on the communication", "source_text": "0130903086.txt", "offset": 444}
+{"id": 319, "sentence": "method, the Transport layer implements it. This layer implements the functions necessary to send data to the communication partner. These mechanisms include multiplexing data from different applications, establishing data", "source_text": "0130903086.txt", "offset": 445}
+{"id": 320, "sentence": "integrity, and management of virtual circuits.", "source_text": "0130903086.txt", "offset": 446}
+{"id": 321, "sentence": "Multiplexing is the method of combining data from the upper layers and", "source_text": "0130903086.txt", "offset": 447}
+{"id": 322, "sentence": "sending them through the same data stream. This allows more than one application to communicate with the communication partner at the same time. When", "source_text": "0130903086.txt", "offset": 448}
+{"id": 323, "sentence": "the data reaches the remote partner, the Transport layer then disassembles the", "source_text": "0130903086.txt", "offset": 449}
+{"id": 324, "sentence": "segment and passes the correct data to each of the receiving applications.", "source_text": "0130903086.txt", "offset": 450}
+{"id": 325, "sentence": "Virtual circuits are the methods of setting up a communication path to", "source_text": "0130903086.txt", "offset": 451}
+{"id": 326, "sentence": "the receiver. This path may physically change depending on the network, but", "source_text": "0130903086.txt", "offset": 452}
+{"id": 327, "sentence": "the path remains open through a virtual link. The Transport layer is responsible for establishing, maintaining, and disconnecting the virtual circuits.", "source_text": "0130903086.txt", "offset": 453}
+{"id": 328, "sentence": "Data integrity is essential to passing data across a network. There are", "source_text": "0130903086.txt", "offset": 454}
+{"id": 329, "sentence": "three methods that the Transport layer can use in order to ensure the integrity: buffering, source quench, and windowing. These three methods are", "source_text": "0130903086.txt", "offset": 455}
+{"id": 330, "sentence": "implementations of flow control.", "source_text": "0130903086.txt", "offset": 456}
+{"id": 331, "sentence": "Buffering is maintained on the receiving computer. As data flows in", "source_text": "0130903086.txt", "offset": 457}
+{"id": 332, "sentence": "faster than can be processed, some data is placed in a buffer and held until", "source_text": "0130903086.txt", "offset": 458}
+{"id": 333, "sentence": "the computer has the time to process it. Unfortunately, if the speed of the", "source_text": "0130903086.txt", "offset": 459}
+{"id": 334, "sentence": "data flow is too fast, the buffer will overflow and data will be lost.", "source_text": "0130903086.txt", "offset": 460}
+{"id": 335, "sentence": "Source quench is a technique where the receiving computer can send a", "source_text": "0130903086.txt", "offset": 461}
+{"id": 336, "sentence": "control message back to the sending computer when too much data is being", "source_text": "0130903086.txt", "offset": 462}
+{"id": 337, "sentence": "received. The sending computer then will delay sending any more data until", "source_text": "0130903086.txt", "offset": 463}
+{"id": 338, "sentence": "the receiving computer can finish processing the current data. At this point,", "source_text": "0130903086.txt", "offset": 464}
+{"id": 339, "sentence": "the receiving computer will send another control message back to the sender", "source_text": "0130903086.txt", "offset": 465}
+{"id": 340, "sentence": "telling it to start sending data again.", "source_text": "0130903086.txt", "offset": 466}
+{"id": 341, "sentence": "The last method, windowing, works on the principle that the receiver", "source_text": "0130903086.txt", "offset": 467}
+{"id": 342, "sentence": "tells the sender how much data it can send at one time. This amount sets the", "source_text": "0130903086.txt", "offset": 468}
+{"id": 343, "sentence": "window size. After the receiver receives the data, it will send back an acknowledgment to the sender. This acknowledgment tells the sender which", "source_text": "0130903086.txt", "offset": 469}
+{"id": 344, "sentence": "data segments have been received. The sender will remove the data from the", "source_text": "0130903086.txt", "offset": 470}
+{"id": 345, "sentence": "window and fill it with new data. This process in sometimes referred to as a", "source_text": "0130903086.txt", "offset": 471}
+{"id": 346, "sentence": "sliding window. Any data that has not been received will be resent. In fact,", "source_text": "0130903086.txt", "offset": 472}
+{"id": 347, "sentence": "the sender has a timer on each segment that it sends, so it knows if the data", "source_text": "0130903086.txt", "offset": 473}
+{"id": 348, "sentence": "has not been received. After the timer expires, it will resend the data and", "source_text": "0130903086.txt", "offset": 474}
+{"id": 349, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 476}
+{"id": 350, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 478}
+{"id": 351, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 480}
+{"id": 352, "sentence": "Page 9", "source_text": "0130903086.txt", "offset": 482}
+{"id": 353, "sentence": "The OSI Model", "source_text": "0130903086.txt", "offset": 484}
+{"id": 354, "sentence": "9", "source_text": "0130903086.txt", "offset": 486}
+{"id": 355, "sentence": "wait for the acknowledgment. This method is known as Positive Acknowledgment with Retransmission.", "source_text": "0130903086.txt", "offset": 488}
+{"id": 356, "sentence": "To illustrate window control, let’s look at Figure 1–5.", "source_text": "0130903086.txt", "offset": 489}
+{"id": 357, "sentence": "1. The Sender sends a message asking to speak with the Receiver.", "source_text": "0130903086.txt", "offset": 490}
+{"id": 358, "sentence": "2. The Receiver decides on a window size and replies. The reply includes", "source_text": "0130903086.txt", "offset": 491}
+{"id": 359, "sentence": "an acknowledgment to speak with the Sender and the size of the window to use; in this case, four bytes.", "source_text": "0130903086.txt", "offset": 492}
+{"id": 360, "sentence": "3. The Sender then creates a 4-byte window (shown in gray) and places", "source_text": "0130903086.txt", "offset": 493}
+{"id": 361, "sentence": "the first data into it. The data DATA is sent across the network. The Receiver only receives the first two bytes, or DA, and sends back a positive acknowledgment. This packet tells the Sender that it has received", "source_text": "0130903086.txt", "offset": 494}
+{"id": 362, "sentence": "bytes 1 and 2.", "source_text": "0130903086.txt", "offset": 495}
+{"id": 363, "sentence": "4. The Sender then slides the window to start with the third and fourth", "source_text": "0130903086.txt", "offset": 496}
+{"id": 364, "sentence": "bytes and adds two more bytes to the free space. The data TA12 is sent", "source_text": "0130903086.txt", "offset": 497}
+{"id": 365, "sentence": "across the network. The Receiver again sends back a positive acknowledgment to the Sender that the third, fourth, fifth, and sixth bytes have", "source_text": "0130903086.txt", "offset": 498}
+{"id": 366, "sentence": "been received. Both partners will now slide the window four more", "source_text": "0130903086.txt", "offset": 499}
+{"id": 367, "sentence": "bytes, and the Sender will send the seventh through tenth bytes. This", "source_text": "0130903086.txt", "offset": 500}
+{"id": 368, "sentence": "continues until all data has been sent and the two partners agree to stop", "source_text": "0130903086.txt", "offset": 501}
+{"id": 369, "sentence": "communications.", "source_text": "0130903086.txt", "offset": 502}
+{"id": 370, "sentence": "Note that this is a simple example and more communication may be", "source_text": "0130903086.txt", "offset": 503}
+{"id": 371, "sentence": "taking place between the Sender and the Receiver.", "source_text": "0130903086.txt", "offset": 504}
+{"id": 372, "sentence": "1", "source_text": "0130903086.txt", "offset": 506}
+{"id": 373, "sentence": "Sender", "source_text": "0130903086.txt", "offset": 507}
+{"id": 374, "sentence": "Receiver", "source_text": "0130903086.txt", "offset": 509}
+{"id": 375, "sentence": "2", "source_text": "0130903086.txt", "offset": 511}
+{"id": 376, "sentence": "3", "source_text": "0130903086.txt", "offset": 512}
+{"id": 377, "sentence": "D", "source_text": "0130903086.txt", "offset": 513}
+{"id": 378, "sentence": "A", "source_text": "0130903086.txt", "offset": 515}
+{"id": 379, "sentence": "T", "source_text": "0130903086.txt", "offset": 517}
+{"id": 380, "sentence": "A", "source_text": "0130903086.txt", "offset": 519}
+{"id": 381, "sentence": "D", "source_text": "0130903086.txt", "offset": 521}
+{"id": 382, "sentence": "A", "source_text": "0130903086.txt", "offset": 523}
+{"id": 383, "sentence": "D", "source_text": "0130903086.txt", "offset": 525}
+{"id": 384, "sentence": "A", "source_text": "0130903086.txt", "offset": 527}
+{"id": 385, "sentence": "4", "source_text": "0130903086.txt", "offset": 529}
+{"id": 386, "sentence": "D", "source_text": "0130903086.txt", "offset": 530}
+{"id": 387, "sentence": "A", "source_text": "0130903086.txt", "offset": 532}
+{"id": 388, "sentence": "FIGURE 1–5", "source_text": "0130903086.txt", "offset": 534}
+{"id": 389, "sentence": "T", "source_text": "0130903086.txt", "offset": 536}
+{"id": 390, "sentence": "A", "source_text": "0130903086.txt", "offset": 538}
+{"id": 391, "sentence": "1", "source_text": "0130903086.txt", "offset": 540}
+{"id": 392, "sentence": "2", "source_text": "0130903086.txt", "offset": 542}
+{"id": 393, "sentence": "T", "source_text": "0130903086.txt", "offset": 544}
+{"id": 394, "sentence": "A", "source_text": "0130903086.txt", "offset": 546}
+{"id": 395, "sentence": "1", "source_text": "0130903086.txt", "offset": 548}
+{"id": 396, "sentence": "2", "source_text": "0130903086.txt", "offset": 550}
+{"id": 397, "sentence": "Sliding window example", "source_text": "0130903086.txt", "offset": 552}
+{"id": 398, "sentence": "Network Layer (Layer 3)", "source_text": "0130903086.txt", "offset": 554}
+{"id": 399, "sentence": "The bottom two layers allow the communication partners to communicate", "source_text": "0130903086.txt", "offset": 555}
+{"id": 400, "sentence": "only if they are on the same segment. A segment is defined as all network devices, or nodes, that are directly connected together. Hubs and MAUs (Multistation Access Units) are part of the same segment. If we were to have all the", "source_text": "0130903086.txt", "offset": 556}
+{"id": 401, "sentence": "computers in the world on a single segment, there would be no Internet. Ei-", "source_text": "0130903086.txt", "offset": 557}
+{"id": 402, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 559}
+{"id": 403, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 561}
+{"id": 404, "sentence": "10", "source_text": "0130903086.txt", "offset": 563}
+{"id": 405, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 565}
+{"id": 406, "sentence": "Page 10", "source_text": "0130903086.txt", "offset": 567}
+{"id": 407, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 569}
+{"id": 408, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 573}
+{"id": 409, "sentence": "ther there would be far too many broadcasts, or the time for a single node to", "source_text": "0130903086.txt", "offset": 575}
+{"id": 410, "sentence": "communicate with another via a token would be ridiculously slow. The function of the Network layer is to identify a remote network and deliver the data", "source_text": "0130903086.txt", "offset": 576}
+{"id": 411, "sentence": "to it. This allows us to have segmentation. These concepts are explored in", "source_text": "0130903086.txt", "offset": 577}
+{"id": 412, "sentence": "more detail in later chapters.", "source_text": "0130903086.txt", "offset": 578}
+{"id": 413, "sentence": "The Network layer enables us to send data to any computer in the", "source_text": "0130903086.txt", "offset": 579}
+{"id": 414, "sentence": "world, as long as there is a physical network connection. However, since we", "source_text": "0130903086.txt", "offset": 580}
+{"id": 415, "sentence": "can’t have a single segment, we must divide these segments up and yet keep", "source_text": "0130903086.txt", "offset": 581}
+{"id": 416, "sentence": "them communicating. The device that allows us to accomplish this spectacular feat is the router, sometimes referred to as a Layer 3 device. The majority", "source_text": "0130903086.txt", "offset": 582}
+{"id": 417, "sentence": "of this book is centered on this specific layer.", "source_text": "0130903086.txt", "offset": 583}
+{"id": 418, "sentence": "A router may know more than one way to get data to its final destination. Again, this is the function of the Network layer. In order for the router", "source_text": "0130903086.txt", "offset": 584}
+{"id": 419, "sentence": "to succeed in this endeavor, it must be able to identify the source segment", "source_text": "0130903086.txt", "offset": 585}
+{"id": 420, "sentence": "and the final destination segment. This is done through network addresses,", "source_text": "0130903086.txt", "offset": 586}
+{"id": 421, "sentence": "also called logical addresses.", "source_text": "0130903086.txt", "offset": 587}
+{"id": 422, "sentence": "A network address consists of two parts, the network portion and the host", "source_text": "0130903086.txt", "offset": 588}
+{"id": 423, "sentence": "portion. As a simple example, suppose the number 1.2 was assigned to your", "source_text": "0130903086.txt", "offset": 589}
+{"id": 424, "sentence": "specific machine. The 1 would identify the network segment and the 2 would", "source_text": "0130903086.txt", "offset": 590}
+{"id": 425, "sentence": "identify you as a specific host on that network. Another computer on your segment would have an address of 1.x, where x would be a unique number. A computer on a different segment might have an address of 2.2, or 3.49. To connect", "source_text": "0130903086.txt", "offset": 591}
+{"id": 426, "sentence": "these two segments together, we would need to place a router.", "source_text": "0130903086.txt", "offset": 592}
+{"id": 427, "sentence": "It is important to note that routers work only with the network address.", "source_text": "0130903086.txt", "offset": 593}
+{"id": 428, "sentence": "They really don’t want to know your specific host address. When a router receives data, it examines the Layer 3 data to determine the destination network", "source_text": "0130903086.txt", "offset": 594}
+{"id": 429, "sentence": "address. It then looks up the address in a table that tells it which route to use", "source_text": "0130903086.txt", "offset": 595}
+{"id": 430, "sentence": "to get the data to its final destination. It places the data on the proper connection, thereby routing the packet from one segment to another. The data", "source_text": "0130903086.txt", "offset": 596}
+{"id": 431, "sentence": "may need to travel through many routers before reaching its destination host.", "source_text": "0130903086.txt", "offset": 597}
+{"id": 432, "sentence": "Each router in the path would perform the same lookup in its table.", "source_text": "0130903086.txt", "offset": 598}
+{"id": 433, "sentence": "Examples of network protocols include:", "source_text": "0130903086.txt", "offset": 599}
+{"id": 434, "sentence": "• IP (Internet Protocol). A routed protocol used in the TCP/IP suite, made", "source_text": "0130903086.txt", "offset": 600}
+{"id": 435, "sentence": "famous by the Internet.", "source_text": "0130903086.txt", "offset": 601}
+{"id": 436, "sentence": "• IPX (Internet Packet eXchange). A routed protocol used in the IPX/SPX", "source_text": "0130903086.txt", "offset": 602}
+{"id": 437, "sentence": "protocol suite usually used in Novell environments.", "source_text": "0130903086.txt", "offset": 603}
+{"id": 438, "sentence": "• RIP (Routing Information Protocol). One of the many routing protocols", "source_text": "0130903086.txt", "offset": 604}
+{"id": 439, "sentence": "implemented on Cisco routers.", "source_text": "0130903086.txt", "offset": 605}
+{"id": 440, "sentence": "• OSPF (Open Shortest Path First). Another routing protocol used by", "source_text": "0130903086.txt", "offset": 606}
+{"id": 441, "sentence": "Cisco routers.", "source_text": "0130903086.txt", "offset": 607}
+{"id": 442, "sentence": "We discuss the difference between routed protocols and routing protocols later in this book.", "source_text": "0130903086.txt", "offset": 608}
+{"id": 443, "sentence": "Data Link Layer (Layer 2)", "source_text": "0130903086.txt", "offset": 610}
+{"id": 444, "sentence": "The Data Link layer is the layer connects the software protocols to the", "source_text": "0130903086.txt", "offset": 611}
+{"id": 445, "sentence": "hardware protocols. It is responsible for taking the data from the upper layers", "source_text": "0130903086.txt", "offset": 612}
+{"id": 446, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 614}
+{"id": 447, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 616}
+{"id": 448, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 618}
+{"id": 449, "sentence": "Page 11", "source_text": "0130903086.txt", "offset": 620}
+{"id": 450, "sentence": "The OSI Model", "source_text": "0130903086.txt", "offset": 622}
+{"id": 451, "sentence": "11", "source_text": "0130903086.txt", "offset": 624}
+{"id": 452, "sentence": "and converting it to the bits needed to send across the physical wire, and vice", "source_text": "0130903086.txt", "offset": 626}
+{"id": 453, "sentence": "versa.", "source_text": "0130903086.txt", "offset": 627}
+{"id": 454, "sentence": "The Data Link layer is split into two sublayers, the Logical Link Control", "source_text": "0130903086.txt", "offset": 628}
+{"id": 455, "sentence": "(LLC) and the Media Access Control (MAC). As you can see in Figure 1–6, the", "source_text": "0130903086.txt", "offset": 629}
+{"id": 456, "sentence": "MAC sublayer is closer to the Physical layer.", "source_text": "0130903086.txt", "offset": 630}
+{"id": 457, "sentence": "The MAC sublayer defines a physical address, called a MAC address or", "source_text": "0130903086.txt", "offset": 631}
+{"id": 458, "sentence": "hardware address, which is unique to each individual network interface. This allows a way to uniquely identify each network interface on a network, even if", "source_text": "0130903086.txt", "offset": 632}
+{"id": 459, "sentence": "the network interfaces are on the same computer. More importantly, though,", "source_text": "0130903086.txt", "offset": 633}
+{"id": 460, "sentence": "the MAC address can be used in any network that supports the chosen network", "source_text": "0130903086.txt", "offset": 634}
+{"id": 461, "sentence": "interface (Ethernet or Token Ring, for example). This allows us to take a computer from one network running TCP/IP and connect it to another network running IPX/SPX by changing just the Network layer protocol. Remember that the", "source_text": "0130903086.txt", "offset": 635}
+{"id": 462, "sentence": "network address, or logical address, is specific to the Network layer protocol", "source_text": "0130903086.txt", "offset": 636}
+{"id": 463, "sentence": "that is being used. This address may be a unique numbering scheme, as in", "source_text": "0130903086.txt", "offset": 637}
+{"id": 464, "sentence": "TCP/IP, or it may be a copy of the MAC address, as in IPX/SPX.", "source_text": "0130903086.txt", "offset": 638}
+{"id": 465, "sentence": "Network Layer", "source_text": "0130903086.txt", "offset": 640}
+{"id": 466, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 641}
+{"id": 467, "sentence": "Layer", "source_text": "0130903086.txt", "offset": 642}
+{"id": 468, "sentence": "Logical Link Control", "source_text": "0130903086.txt", "offset": 644}
+{"id": 469, "sentence": "Media Access Control", "source_text": "0130903086.txt", "offset": 645}
+{"id": 470, "sentence": "Physical Layer", "source_text": "0130903086.txt", "offset": 646}
+{"id": 471, "sentence": "FIGURE 1–6", "source_text": "0130903086.txt", "offset": 648}
+{"id": 472, "sentence": "Split layers of the Data Link layer", "source_text": "0130903086.txt", "offset": 650}
+{"id": 473, "sentence": "A MAC address is a 6-byte value that is usually created by the network", "source_text": "0130903086.txt", "offset": 652}
+{"id": 474, "sentence": "interface manufacturer. The first three bytes are assigned by the IEEE (Institute of Electrical and Electronics Engineers) and are specific to each vendor.", "source_text": "0130903086.txt", "offset": 653}
+{"id": 475, "sentence": "The vendor generates the last three bytes. Examples are shown here where X", "source_text": "0130903086.txt", "offset": 654}
+{"id": 476, "sentence": "can be any hex value from 0 to F.", "source_text": "0130903086.txt", "offset": 655}
+{"id": 477, "sentence": "• 00-00-0C-XX-XX-XX", "source_text": "0130903086.txt", "offset": 656}
+{"id": 478, "sentence": "• 00-E0-98-XX-XX-XX", "source_text": "0130903086.txt", "offset": 657}
+{"id": 479, "sentence": "• 00-10-5A-XX-XX-XX", "source_text": "0130903086.txt", "offset": 658}
+{"id": 480, "sentence": "Cisco", "source_text": "0130903086.txt", "offset": 660}
+{"id": 481, "sentence": "LinkSys", "source_text": "0130903086.txt", "offset": 661}
+{"id": 482, "sentence": "3Com", "source_text": "0130903086.txt", "offset": 662}
+{"id": 483, "sentence": "The MAC layer on the receiving computer will take the bits from the", "source_text": "0130903086.txt", "offset": 664}
+{"id": 484, "sentence": "Physical layer and put them in order into a frame. It will also do a CRC", "source_text": "0130903086.txt", "offset": 665}
+{"id": 485, "sentence": "(Cyclic Redundancy Check) to determine if there are any errors in the frame.", "source_text": "0130903086.txt", "offset": 666}
+{"id": 486, "sentence": "It will check the destination hardware address to determine if the data is", "source_text": "0130903086.txt", "offset": 667}
+{"id": 487, "sentence": "meant for it, or if it should be dropped or sent on to the next machine. If the", "source_text": "0130903086.txt", "offset": 668}
+{"id": 488, "sentence": "data is meant for the current computer, it will pass it to the LLC layer.", "source_text": "0130903086.txt", "offset": 669}
+{"id": 489, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 671}
+{"id": 490, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 673}
+{"id": 491, "sentence": "12", "source_text": "0130903086.txt", "offset": 675}
+{"id": 492, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 677}
+{"id": 493, "sentence": "Page 12", "source_text": "0130903086.txt", "offset": 679}
+{"id": 494, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 681}
+{"id": 495, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 685}
+{"id": 496, "sentence": "The MAC layer can be referred to as the hardware layer. This implies", "source_text": "0130903086.txt", "offset": 687}
+{"id": 497, "sentence": "that the software protocols above it are hidden from the physical media.", "source_text": "0130903086.txt", "offset": 688}
+{"id": 498, "sentence": "The LLC layer is the buffer between the software protocols and the", "source_text": "0130903086.txt", "offset": 689}
+{"id": 499, "sentence": "hardware protocols. It is responsible for taking the data from the Network", "source_text": "0130903086.txt", "offset": 690}
+{"id": 500, "sentence": "layer and sending it to the MAC layer. This allows the software protocols to", "source_text": "0130903086.txt", "offset": 691}
+{"id": 501, "sentence": "run on any type of network architecture, including Ethernet and Token Ring.", "source_text": "0130903086.txt", "offset": 692}
+{"id": 502, "sentence": "When the LLC receives data from the MAC layer, it must determine", "source_text": "0130903086.txt", "offset": 693}
+{"id": 503, "sentence": "which software protocol in the Network layer to send it to. In order to do", "source_text": "0130903086.txt", "offset": 694}
+{"id": 504, "sentence": "this, the LLC includes service access points (SAP) in the header. The Source", "source_text": "0130903086.txt", "offset": 695}
+{"id": 505, "sentence": "SAP (SSAP) identifies the sending protocol and the Destination SAP (DSAP)", "source_text": "0130903086.txt", "offset": 696}
+{"id": 506, "sentence": "identifies the receiving protocol. When the LLC receives the frame from the", "source_text": "0130903086.txt", "offset": 697}
+{"id": 507, "sentence": "MAC sublayer, it can then strip off the header and examine the DSAP. Using", "source_text": "0130903086.txt", "offset": 698}
+{"id": 508, "sentence": "this information, the LLC can now forward the data to the correct Network", "source_text": "0130903086.txt", "offset": 699}
+{"id": 509, "sentence": "layer protocol.", "source_text": "0130903086.txt", "offset": 700}
+{"id": 510, "sentence": "Examples of Data Link protocols include:", "source_text": "0130903086.txt", "offset": 701}
+{"id": 511, "sentence": "• HDLC (High-Level Data Link Control). A serial communication that is", "source_text": "0130903086.txt", "offset": 702}
+{"id": 512, "sentence": "usually vendor specific.", "source_text": "0130903086.txt", "offset": 703}
+{"id": 513, "sentence": "• PPP (Point-to-Point Protocol). A low-speed serial protocol.", "source_text": "0130903086.txt", "offset": 704}
+{"id": 514, "sentence": "• 802.3 and 802.2", "source_text": "0130903086.txt", "offset": 705}
+{"id": 515, "sentence": "• ISDN (Integrated Services Digital Network). A digital communication", "source_text": "0130903086.txt", "offset": 706}
+{"id": 516, "sentence": "method used over copper wire.", "source_text": "0130903086.txt", "offset": 707}
+{"id": 517, "sentence": "• Frame Relay", "source_text": "0130903086.txt", "offset": 708}
+{"id": 518, "sentence": "Physical Layer (Layer 1)", "source_text": "0130903086.txt", "offset": 710}
+{"id": 519, "sentence": "The Physical layer does only two things, yet these two things are vital to the", "source_text": "0130903086.txt", "offset": 711}
+{"id": 520, "sentence": "network. It is responsible for sending data and receiving data across a physical medium. This data is sent in bits, either a 0 or a 1. The data may be transmitted as electrical signals (that is, positive and negative voltages), audio", "source_text": "0130903086.txt", "offset": 712}
+{"id": 521, "sentence": "tones, or light.", "source_text": "0130903086.txt", "offset": 713}
+{"id": 522, "sentence": "This layer also defines the Data Terminal Equipment (DTE) and the", "source_text": "0130903086.txt", "offset": 714}
+{"id": 523, "sentence": "Data Circuit-Terminating Equipment (DCE). The DTE is often accessed", "source_text": "0130903086.txt", "offset": 715}
+{"id": 524, "sentence": "through a modem or a Channel Service Unit/Data Service Unit (CSU/DSU)", "source_text": "0130903086.txt", "offset": 716}
+{"id": 525, "sentence": "connected to a PC or a router. The carrier of the WAN signal provides the", "source_text": "0130903086.txt", "offset": 717}
+{"id": 526, "sentence": "DCE equipment. A typical device would be a packet switch, which is responsible for clocking and switching.", "source_text": "0130903086.txt", "offset": 718}
+{"id": 527, "sentence": "Typical interfaces of this layer include:", "source_text": "0130903086.txt", "offset": 719}
+{"id": 528, "sentence": "• HSSI (High-Speed Serial Interface). A point-to-point connection over", "source_text": "0130903086.txt", "offset": 720}
+{"id": 529, "sentence": "copper wires.", "source_text": "0130903086.txt", "offset": 721}
+{"id": 530, "sentence": "• V.35. A synchronous communication method developed by the International Telecommunication Union-Telecommunication Standardization", "source_text": "0130903086.txt", "offset": 722}
+{"id": 531, "sentence": "Sector (ITU-T). All the V.xx standards have been created by the ITU-T.", "source_text": "0130903086.txt", "offset": 723}
+{"id": 532, "sentence": "• EIA/TIA-232. A serial port interface using the RS-232 port.", "source_text": "0130903086.txt", "offset": 724}
+{"id": 533, "sentence": "• X.21", "source_text": "0130903086.txt", "offset": 725}
+{"id": 534, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 727}
+{"id": 535, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 729}
+{"id": 536, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 731}
+{"id": 537, "sentence": "Page 13", "source_text": "0130903086.txt", "offset": 733}
+{"id": 538, "sentence": "The OSI Model", "source_text": "0130903086.txt", "offset": 735}
+{"id": 539, "sentence": "13", "source_text": "0130903086.txt", "offset": 737}
+{"id": 540, "sentence": "Data Encapsulation Using the OSI Model", "source_text": "0130903086.txt", "offset": 739}
+{"id": 541, "sentence": "As we read through the description of the OSI layers, a question may arise:", "source_text": "0130903086.txt", "offset": 740}
+{"id": 542, "sentence": "Since there may be more than one application using more than one communication partner using more than one protocol, how does the data get to its", "source_text": "0130903086.txt", "offset": 741}
+{"id": 543, "sentence": "destination correctly?", "source_text": "0130903086.txt", "offset": 742}
+{"id": 544, "sentence": "User Data", "source_text": "0130903086.txt", "offset": 744}
+{"id": 545, "sentence": "Application", "source_text": "0130903086.txt", "offset": 745}
+{"id": 546, "sentence": "Presentation", "source_text": "0130903086.txt", "offset": 746}
+{"id": 547, "sentence": "Application Header", "source_text": "0130903086.txt", "offset": 748}
+{"id": 548, "sentence": "User Data", "source_text": "0130903086.txt", "offset": 750}
+{"id": 549, "sentence": "Presentation Header", "source_text": "0130903086.txt", "offset": 752}
+{"id": 550, "sentence": "A User Data", "source_text": "0130903086.txt", "offset": 754}
+{"id": 551, "sentence": "Session", "source_text": "0130903086.txt", "offset": 756}
+{"id": 552, "sentence": "Session Header", "source_text": "0130903086.txt", "offset": 758}
+{"id": 553, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 760}
+{"id": 554, "sentence": "Transport Header", "source_text": "0130903086.txt", "offset": 762}
+{"id": 555, "sentence": "P A User Data", "source_text": "0130903086.txt", "offset": 764}
+{"id": 556, "sentence": "Message", "source_text": "0130903086.txt", "offset": 765}
+{"id": 557, "sentence": "Network", "source_text": "0130903086.txt", "offset": 767}
+{"id": 558, "sentence": "Network Header", "source_text": "0130903086.txt", "offset": 769}
+{"id": 559, "sentence": "Segment", "source_text": "0130903086.txt", "offset": 771}
+{"id": 560, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 773}
+{"id": 561, "sentence": "Frame Header", "source_text": "0130903086.txt", "offset": 775}
+{"id": 562, "sentence": "Packet", "source_text": "0130903086.txt", "offset": 777}
+{"id": 563, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 779}
+{"id": 564, "sentence": "FIGURE 1–7", "source_text": "0130903086.txt", "offset": 780}
+{"id": 565, "sentence": "001011010100010101110", "source_text": "0130903086.txt", "offset": 782}
+{"id": 566, "sentence": "Data encapsulation flow", "source_text": "0130903086.txt", "offset": 784}
+{"id": 567, "sentence": "This is accomplished through a process called data encapsulation (see", "source_text": "0130903086.txt", "offset": 786}
+{"id": 568, "sentence": "Figure 1–7). Basically, it works like this:", "source_text": "0130903086.txt", "offset": 787}
+{"id": 569, "sentence": "1. A user is working on an application and decides to save the data to a", "source_text": "0130903086.txt", "offset": 788}
+{"id": 570, "sentence": "remote server. The application calls the Application layer to start the", "source_text": "0130903086.txt", "offset": 789}
+{"id": 571, "sentence": "process.", "source_text": "0130903086.txt", "offset": 790}
+{"id": 572, "sentence": "2. The Application layer takes the data and places some information,", "source_text": "0130903086.txt", "offset": 791}
+{"id": 573, "sentence": "called a header, at the beginning. The header tells the Application layer", "source_text": "0130903086.txt", "offset": 792}
+{"id": 574, "sentence": "which user application sent the data.", "source_text": "0130903086.txt", "offset": 793}
+{"id": 575, "sentence": "3. The Application layer then sends the data to the Presentation layer,", "source_text": "0130903086.txt", "offset": 794}
+{"id": 576, "sentence": "where the data conversion takes place. The Presentation layer places a", "source_text": "0130903086.txt", "offset": 795}
+{"id": 577, "sentence": "header on all of the information received from the Application layer (including the Application layer header). This header identifies which protocol in the Application layer to pass it back.", "source_text": "0130903086.txt", "offset": 796}
+{"id": 578, "sentence": "4. The Presentation layer then sends the complete message to the Session", "source_text": "0130903086.txt", "offset": 797}
+{"id": 579, "sentence": "layer. The Session layer sets up the synchronized communication information to speak with the communication partner and appends the information to another header.", "source_text": "0130903086.txt", "offset": 798}
+{"id": 580, "sentence": "5. The Session layer then sends the message to the Transport layer, where", "source_text": "0130903086.txt", "offset": 799}
+{"id": 581, "sentence": "information is placed into the header identifying the source and the destination hosts and the method of connection (connectionless versus", "source_text": "0130903086.txt", "offset": 800}
+{"id": 582, "sentence": "connection-oriented).", "source_text": "0130903086.txt", "offset": 801}
+{"id": 583, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 803}
+{"id": 584, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 805}
+{"id": 585, "sentence": "14", "source_text": "0130903086.txt", "offset": 807}
+{"id": 586, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 809}
+{"id": 587, "sentence": "Page 14", "source_text": "0130903086.txt", "offset": 811}
+{"id": 588, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 813}
+{"id": 589, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 817}
+{"id": 590, "sentence": "6. The Transport layer then passes the segment to the Network layer,", "source_text": "0130903086.txt", "offset": 819}
+{"id": 591, "sentence": "where the network address for the destination and the source are included in the header.", "source_text": "0130903086.txt", "offset": 820}
+{"id": 592, "sentence": "7. The Network layer passes the packet (connection-oriented) or the datagram (connectionless) to the Data Link layer. The Data Link layer then", "source_text": "0130903086.txt", "offset": 821}
+{"id": 593, "sentence": "includes the SSAP and the DSAP to identify which Transport protocol to", "source_text": "0130903086.txt", "offset": 822}
+{"id": 594, "sentence": "return it to. It also includes the source and the destination MAC addresses.", "source_text": "0130903086.txt", "offset": 823}
+{"id": 595, "sentence": "8. The Data Link layer then passes the frame to the Physical layer for", "source_text": "0130903086.txt", "offset": 824}
+{"id": 596, "sentence": "transmitting on the physical medium as individual bits.", "source_text": "0130903086.txt", "offset": 825}
+{"id": 597, "sentence": "9. Finally, the receiving computer receives the bits and reverses the", "source_text": "0130903086.txt", "offset": 826}
+{"id": 598, "sentence": "process to get the original data to the source application; in this case, a", "source_text": "0130903086.txt", "offset": 827}
+{"id": 599, "sentence": "file server service.", "source_text": "0130903086.txt", "offset": 828}
+{"id": 600, "sentence": "note", "source_text": "0130903086.txt", "offset": 830}
+{"id": 601, "sentence": "Note that since the top three layers have similar functionality, we can typically combine all of the data in those layers and simply refer to it as the Protocol Data Unit (PDU). In this Instance, we can substitute the term PDU for the term message.", "source_text": "0130903086.txt", "offset": 832}
+{"id": 602, "sentence": "In summary:", "source_text": "0130903086.txt", "offset": 834}
+{"id": 603, "sentence": "1. Data encapsulation takes the data from the user,", "source_text": "0130903086.txt", "offset": 835}
+{"id": 604, "sentence": "2. packages it as a message at the Session layer to send to the receiver,", "source_text": "0130903086.txt", "offset": 836}
+{"id": 605, "sentence": "3. encapsulates the segment inside a packet at the Network layer with the", "source_text": "0130903086.txt", "offset": 837}
+{"id": 606, "sentence": "network addressing information,", "source_text": "0130903086.txt", "offset": 838}
+{"id": 607, "sentence": "4. encapsulates this packet into a frame at the Data Link layer with the", "source_text": "0130903086.txt", "offset": 839}
+{"id": 608, "sentence": "MAC addresses,and", "source_text": "0130903086.txt", "offset": 840}
+{"id": 609, "sentence": "5. sends the frame across the wire as individual bits at the Physical layer.", "source_text": "0130903086.txt", "offset": 841}
+{"id": 610, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 843}
+{"id": 611, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 845}
+{"id": 612, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 847}
+{"id": 613, "sentence": "Page 15", "source_text": "0130903086.txt", "offset": 849}
+{"id": 614, "sentence": "Summary", "source_text": "0130903086.txt", "offset": 851}
+{"id": 615, "sentence": "The OSI model is a tool used to provide a standard set of", "source_text": "0130903086.txt", "offset": 853}
+{"id": 616, "sentence": "rules for communication across multivendor hardware. Each", "source_text": "0130903086.txt", "offset": 854}
+{"id": 617, "sentence": "layer of the OSI model has a function it must accomplish,", "source_text": "0130903086.txt", "offset": 855}
+{"id": 618, "sentence": "but the method to perform this function is left to the developer. As data flows down each of the layers, encapsulation", "source_text": "0130903086.txt", "offset": 856}
+{"id": 619, "sentence": "takes place allowing for reassembly of the data on the receiving machine. Each layer is responsible in part for the", "source_text": "0130903086.txt", "offset": 857}
+{"id": 620, "sentence": "complete data transfer from the source host to the destination host. Knowing the OSI model will help in troubleshooting Cisco networks.", "source_text": "0130903086.txt", "offset": 858}
+{"id": 621, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 860}
+{"id": 622, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 862}
+{"id": 623, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 864}
+{"id": 624, "sentence": "Page 16", "source_text": "0130903086.txt", "offset": 866}
+{"id": 625, "sentence": "Scenario Lab 1.1", "source_text": "0130903086.txt", "offset": 868}
+{"id": 626, "sentence": "You have been asked to begin a large design and implementation project with Network Solutions, Inc. (a fictional company). However, before you are allowed to proceed, the", "source_text": "0130903086.txt", "offset": 870}
+{"id": 627, "sentence": "project manager wants to be sure that you are the correct", "source_text": "0130903086.txt", "offset": 871}
+{"id": 628, "sentence": "person for the job. This person asks you to list the layers of", "source_text": "0130903086.txt", "offset": 872}
+{"id": 629, "sentence": "the OSI model and describe in brief the functions of each", "source_text": "0130903086.txt", "offset": 873}
+{"id": 630, "sentence": "layer. Can you prove you are the correct person for the job?", "source_text": "0130903086.txt", "offset": 874}
+{"id": 631, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 876}
+{"id": 632, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 878}
+{"id": 633, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 880}
+{"id": 634, "sentence": "Page 17", "source_text": "0130903086.txt", "offset": 882}
+{"id": 635, "sentence": "Exam Objective", "source_text": "0130903086.txt", "offset": 884}
+{"id": 636, "sentence": "Checklist", "source_text": "0130903086.txt", "offset": 885}
+{"id": 637, "sentence": "By working through this chapter, you should have sufficient", "source_text": "0130903086.txt", "offset": 887}
+{"id": 638, "sentence": "knowledge to answer these exam objectives:", "source_text": "0130903086.txt", "offset": 888}
+{"id": 639, "sentence": "• Identify and describe the functions of each of the seven", "source_text": "0130903086.txt", "offset": 889}
+{"id": 640, "sentence": "layers of the OSI reference model.", "source_text": "0130903086.txt", "offset": 890}
+{"id": 641, "sentence": "• Describe data link addresses and network addresses", "source_text": "0130903086.txt", "offset": 891}
+{"id": 642, "sentence": "and identify the key differences between them.", "source_text": "0130903086.txt", "offset": 892}
+{"id": 643, "sentence": "• Define and describe the function of a MAC address.", "source_text": "0130903086.txt", "offset": 893}
+{"id": 644, "sentence": "• Identify at least three reasons why the industry uses a", "source_text": "0130903086.txt", "offset": 894}
+{"id": 645, "sentence": "layered model.", "source_text": "0130903086.txt", "offset": 895}
+{"id": 646, "sentence": "• Define and explain the five conversion steps of data", "source_text": "0130903086.txt", "offset": 896}
+{"id": 647, "sentence": "encapsulation.", "source_text": "0130903086.txt", "offset": 897}
+{"id": 648, "sentence": "• Define flow control and describe the three basic methods used in networking.", "source_text": "0130903086.txt", "offset": 898}
+{"id": 649, "sentence": "• List the key internetworking functions of the OSI Network layer and how they are performed in a router.", "source_text": "0130903086.txt", "offset": 899}
+{"id": 650, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 901}
+{"id": 651, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 903}
+{"id": 652, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 905}
+{"id": 653, "sentence": "Page 18", "source_text": "0130903086.txt", "offset": 907}
+{"id": 654, "sentence": "Practice Questions", "source_text": "0130903086.txt", "offset": 909}
+{"id": 655, "sentence": "1. The technology used to connect multiple computers together in a single office is called:", "source_text": "0130903086.txt", "offset": 911}
+{"id": 656, "sentence": "a.", "source_text": "0130903086.txt", "offset": 912}
+{"id": 657, "sentence": "b.", "source_text": "0130903086.txt", "offset": 913}
+{"id": 658, "sentence": "c.", "source_text": "0130903086.txt", "offset": 914}
+{"id": 659, "sentence": "d.", "source_text": "0130903086.txt", "offset": 915}
+{"id": 660, "sentence": "LAN", "source_text": "0130903086.txt", "offset": 917}
+{"id": 661, "sentence": "WAN", "source_text": "0130903086.txt", "offset": 918}
+{"id": 662, "sentence": "MAN", "source_text": "0130903086.txt", "offset": 919}
+{"id": 663, "sentence": "Internet", "source_text": "0130903086.txt", "offset": 920}
+{"id": 664, "sentence": "2. Connecting multiple networks together using an outside carrier’s signal, such as the telephone service is", "source_text": "0130903086.txt", "offset": 922}
+{"id": 665, "sentence": "known as:", "source_text": "0130903086.txt", "offset": 923}
+{"id": 666, "sentence": "a.", "source_text": "0130903086.txt", "offset": 924}
+{"id": 667, "sentence": "b.", "source_text": "0130903086.txt", "offset": 925}
+{"id": 668, "sentence": "c.", "source_text": "0130903086.txt", "offset": 926}
+{"id": 669, "sentence": "d.", "source_text": "0130903086.txt", "offset": 927}
+{"id": 670, "sentence": "LAN", "source_text": "0130903086.txt", "offset": 929}
+{"id": 671, "sentence": "WAN", "source_text": "0130903086.txt", "offset": 930}
+{"id": 672, "sentence": "Protocol", "source_text": "0130903086.txt", "offset": 931}
+{"id": 673, "sentence": "Internet", "source_text": "0130903086.txt", "offset": 932}
+{"id": 674, "sentence": "3. Why should we use layered models in a network architecture? (select all that apply)", "source_text": "0130903086.txt", "offset": 934}
+{"id": 675, "sentence": "a. It tells us exactly how to perform a specific function.", "source_text": "0130903086.txt", "offset": 935}
+{"id": 676, "sentence": "b. It allows us to take a complex method and break", "source_text": "0130903086.txt", "offset": 936}
+{"id": 677, "sentence": "it into smaller, more manageable methods.", "source_text": "0130903086.txt", "offset": 937}
+{"id": 678, "sentence": "c. A change to one layer has no affect on any other", "source_text": "0130903086.txt", "offset": 938}
+{"id": 679, "sentence": "layer.", "source_text": "0130903086.txt", "offset": 939}
+{"id": 680, "sentence": "d. A change to one layer affects all other layers.", "source_text": "0130903086.txt", "offset": 940}
+{"id": 681, "sentence": "e. It restricts us to using only one network vendor.", "source_text": "0130903086.txt", "offset": 941}
+{"id": 682, "sentence": "f. It makes troubleshooting networks easier by being", "source_text": "0130903086.txt", "offset": 942}
+{"id": 683, "sentence": "able to locate the exact layer causing the problem.", "source_text": "0130903086.txt", "offset": 943}
+{"id": 684, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 945}
+{"id": 685, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 947}
+{"id": 686, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 949}
+{"id": 687, "sentence": "Page 19", "source_text": "0130903086.txt", "offset": 951}
+{"id": 688, "sentence": "Practice Questions", "source_text": "0130903086.txt", "offset": 953}
+{"id": 689, "sentence": "19", "source_text": "0130903086.txt", "offset": 955}
+{"id": 690, "sentence": "4. Which layer is responsible for finding a communication partner on the", "source_text": "0130903086.txt", "offset": 957}
+{"id": 691, "sentence": "network?", "source_text": "0130903086.txt", "offset": 958}
+{"id": 692, "sentence": "a.", "source_text": "0130903086.txt", "offset": 959}
+{"id": 693, "sentence": "b.", "source_text": "0130903086.txt", "offset": 960}
+{"id": 694, "sentence": "c.", "source_text": "0130903086.txt", "offset": 961}
+{"id": 695, "sentence": "d.", "source_text": "0130903086.txt", "offset": 962}
+{"id": 696, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 964}
+{"id": 697, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 965}
+{"id": 698, "sentence": "Application", "source_text": "0130903086.txt", "offset": 966}
+{"id": 699, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 967}
+{"id": 700, "sentence": "5. What is the correct order for the shown layers? (bottom to top)", "source_text": "0130903086.txt", "offset": 969}
+{"id": 701, "sentence": "a.", "source_text": "0130903086.txt", "offset": 970}
+{"id": 702, "sentence": "b.", "source_text": "0130903086.txt", "offset": 971}
+{"id": 703, "sentence": "c.", "source_text": "0130903086.txt", "offset": 972}
+{"id": 704, "sentence": "d.", "source_text": "0130903086.txt", "offset": 973}
+{"id": 705, "sentence": "e.", "source_text": "0130903086.txt", "offset": 974}
+{"id": 706, "sentence": "f.", "source_text": "0130903086.txt", "offset": 975}
+{"id": 707, "sentence": "g.", "source_text": "0130903086.txt", "offset": 976}
+{"id": 708, "sentence": "Presentation", "source_text": "0130903086.txt", "offset": 978}
+{"id": 709, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 979}
+{"id": 710, "sentence": "Application", "source_text": "0130903086.txt", "offset": 980}
+{"id": 711, "sentence": "Network", "source_text": "0130903086.txt", "offset": 981}
+{"id": 712, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 982}
+{"id": 713, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 983}
+{"id": 714, "sentence": "Session", "source_text": "0130903086.txt", "offset": 984}
+{"id": 715, "sentence": "6. True or False: The Transport layer can communicate directly with the", "source_text": "0130903086.txt", "offset": 986}
+{"id": 716, "sentence": "Network and Presentation layers.", "source_text": "0130903086.txt", "offset": 987}
+{"id": 717, "sentence": "7. Which of the following are performed at the Presentation layer? (Choose", "source_text": "0130903086.txt", "offset": 988}
+{"id": 718, "sentence": "two)", "source_text": "0130903086.txt", "offset": 989}
+{"id": 719, "sentence": "a. Presening data to the Application layer", "source_text": "0130903086.txt", "offset": 990}
+{"id": 720, "sentence": "b. Setting checkpoints in the data stream for reliability", "source_text": "0130903086.txt", "offset": 991}
+{"id": 721, "sentence": "c. Providing character conversion between dissimilar operating systems (such as PC to mainframe)", "source_text": "0130903086.txt", "offset": 992}
+{"id": 722, "sentence": "d. Adding the network addresses to the header", "source_text": "0130903086.txt", "offset": 993}
+{"id": 723, "sentence": "8. The Presentation layer protocols include? (choose two)", "source_text": "0130903086.txt", "offset": 994}
+{"id": 724, "sentence": "a.", "source_text": "0130903086.txt", "offset": 995}
+{"id": 725, "sentence": "b.", "source_text": "0130903086.txt", "offset": 996}
+{"id": 726, "sentence": "c.", "source_text": "0130903086.txt", "offset": 997}
+{"id": 727, "sentence": "d.", "source_text": "0130903086.txt", "offset": 998}
+{"id": 728, "sentence": "e.", "source_text": "0130903086.txt", "offset": 999}
+{"id": 729, "sentence": "PICT", "source_text": "0130903086.txt", "offset": 1001}
+{"id": 730, "sentence": "SQL", "source_text": "0130903086.txt", "offset": 1002}
+{"id": 731, "sentence": "TCP", "source_text": "0130903086.txt", "offset": 1003}
+{"id": 732, "sentence": "IPX", "source_text": "0130903086.txt", "offset": 1004}
+{"id": 733, "sentence": "JPEG", "source_text": "0130903086.txt", "offset": 1005}
+{"id": 734, "sentence": "9. The function of the Session layer is? (choose two)", "source_text": "0130903086.txt", "offset": 1007}
+{"id": 735, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1008}
+{"id": 736, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1009}
+{"id": 737, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1010}
+{"id": 738, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1011}
+{"id": 739, "sentence": "To determine if half-duplex or full-duplex is being used", "source_text": "0130903086.txt", "offset": 1013}
+{"id": 740, "sentence": "To present data to the Network layer", "source_text": "0130903086.txt", "offset": 1014}
+{"id": 741, "sentence": "To place checkpoints into the data stream for reliability", "source_text": "0130903086.txt", "offset": 1015}
+{"id": 742, "sentence": "To provide flow control", "source_text": "0130903086.txt", "offset": 1016}
+{"id": 743, "sentence": "10. The Session layer protocols include? (choose three)", "source_text": "0130903086.txt", "offset": 1018}
+{"id": 744, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1019}
+{"id": 745, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1020}
+{"id": 746, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1021}
+{"id": 747, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1022}
+{"id": 748, "sentence": "e.", "source_text": "0130903086.txt", "offset": 1023}
+{"id": 749, "sentence": "PICT", "source_text": "0130903086.txt", "offset": 1025}
+{"id": 750, "sentence": "SQL", "source_text": "0130903086.txt", "offset": 1026}
+{"id": 751, "sentence": "TCP", "source_text": "0130903086.txt", "offset": 1027}
+{"id": 752, "sentence": "X Windows", "source_text": "0130903086.txt", "offset": 1028}
+{"id": 753, "sentence": "NFS", "source_text": "0130903086.txt", "offset": 1029}
+{"id": 754, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 1031}
+{"id": 755, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 1033}
+{"id": 756, "sentence": "20", "source_text": "0130903086.txt", "offset": 1035}
+{"id": 757, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 1037}
+{"id": 758, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 1039}
+{"id": 759, "sentence": "Page 20", "source_text": "0130903086.txt", "offset": 1041}
+{"id": 760, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 1045}
+{"id": 761, "sentence": "11. Which layer is responsible for multiplexing data from upper layers and", "source_text": "0130903086.txt", "offset": 1047}
+{"id": 762, "sentence": "placing the data into a segment?", "source_text": "0130903086.txt", "offset": 1048}
+{"id": 763, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1049}
+{"id": 764, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1050}
+{"id": 765, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1051}
+{"id": 766, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1052}
+{"id": 767, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 1054}
+{"id": 768, "sentence": "Network", "source_text": "0130903086.txt", "offset": 1055}
+{"id": 769, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 1056}
+{"id": 770, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 1057}
+{"id": 771, "sentence": "12. Windowing is performed at the Transport layer. What is windowing?", "source_text": "0130903086.txt", "offset": 1059}
+{"id": 772, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1060}
+{"id": 773, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1061}
+{"id": 774, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1062}
+{"id": 775, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1063}
+{"id": 776, "sentence": "A", "source_text": "0130903086.txt", "offset": 1065}
+{"id": 777, "sentence": "A", "source_text": "0130903086.txt", "offset": 1066}
+{"id": 778, "sentence": "A", "source_text": "0130903086.txt", "offset": 1067}
+{"id": 779, "sentence": "A", "source_text": "0130903086.txt", "offset": 1068}
+{"id": 780, "sentence": "method", "source_text": "0130903086.txt", "offset": 1070}
+{"id": 781, "sentence": "method", "source_text": "0130903086.txt", "offset": 1071}
+{"id": 782, "sentence": "method", "source_text": "0130903086.txt", "offset": 1072}
+{"id": 783, "sentence": "method", "source_text": "0130903086.txt", "offset": 1073}
+{"id": 784, "sentence": "of", "source_text": "0130903086.txt", "offset": 1075}
+{"id": 785, "sentence": "of", "source_text": "0130903086.txt", "offset": 1076}
+{"id": 786, "sentence": "of", "source_text": "0130903086.txt", "offset": 1077}
+{"id": 787, "sentence": "of", "source_text": "0130903086.txt", "offset": 1078}
+{"id": 788, "sentence": "buffering", "source_text": "0130903086.txt", "offset": 1080}
+{"id": 789, "sentence": "session establishment", "source_text": "0130903086.txt", "offset": 1081}
+{"id": 790, "sentence": "flow control", "source_text": "0130903086.txt", "offset": 1082}
+{"id": 791, "sentence": "character conversion", "source_text": "0130903086.txt", "offset": 1083}
+{"id": 792, "sentence": "13. The Network layer’s primary function is to:", "source_text": "0130903086.txt", "offset": 1085}
+{"id": 793, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1086}
+{"id": 794, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1087}
+{"id": 795, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1088}
+{"id": 796, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1089}
+{"id": 797, "sentence": "Add MAC addresses to the packet", "source_text": "0130903086.txt", "offset": 1091}
+{"id": 798, "sentence": "Establish a communication path to the communication partner", "source_text": "0130903086.txt", "offset": 1092}
+{"id": 799, "sentence": "Provide connection-oriented service", "source_text": "0130903086.txt", "offset": 1093}
+{"id": 800, "sentence": "Route data between different network segments", "source_text": "0130903086.txt", "offset": 1094}
+{"id": 801, "sentence": "14. What are the two parts to a network address? (Choose two)", "source_text": "0130903086.txt", "offset": 1096}
+{"id": 802, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1097}
+{"id": 803, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1098}
+{"id": 804, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1099}
+{"id": 805, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1100}
+{"id": 806, "sentence": "Source Service Access Point", "source_text": "0130903086.txt", "offset": 1102}
+{"id": 807, "sentence": "Host Identifier", "source_text": "0130903086.txt", "offset": 1103}
+{"id": 808, "sentence": "MAC address", "source_text": "0130903086.txt", "offset": 1104}
+{"id": 809, "sentence": "Network Identifier", "source_text": "0130903086.txt", "offset": 1105}
+{"id": 810, "sentence": "15. The Data Link layer is split into two sublayers. Name them. (choose", "source_text": "0130903086.txt", "offset": 1107}
+{"id": 811, "sentence": "two)", "source_text": "0130903086.txt", "offset": 1108}
+{"id": 812, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1109}
+{"id": 813, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1110}
+{"id": 814, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1111}
+{"id": 815, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1112}
+{"id": 816, "sentence": "Local Link Control", "source_text": "0130903086.txt", "offset": 1114}
+{"id": 817, "sentence": "Logical Link Control", "source_text": "0130903086.txt", "offset": 1115}
+{"id": 818, "sentence": "Machine Address Code", "source_text": "0130903086.txt", "offset": 1116}
+{"id": 819, "sentence": "Media Access Control", "source_text": "0130903086.txt", "offset": 1117}
+{"id": 820, "sentence": "16. List the functions of the MAC sublayer. (choose three)", "source_text": "0130903086.txt", "offset": 1119}
+{"id": 821, "sentence": "a. Unique hardware addresses allow us to switch between different", "source_text": "0130903086.txt", "offset": 1120}
+{"id": 822, "sentence": "networks and still be uniquely identified", "source_text": "0130903086.txt", "offset": 1121}
+{"id": 823, "sentence": "b. Provides SSAP and DSAP for passing frame to proper Transport", "source_text": "0130903086.txt", "offset": 1122}
+{"id": 824, "sentence": "protocol", "source_text": "0130903086.txt", "offset": 1123}
+{"id": 825, "sentence": "c. Provides error checking through CRC", "source_text": "0130903086.txt", "offset": 1124}
+{"id": 826, "sentence": "d. Provides an interface to the physical medium", "source_text": "0130903086.txt", "offset": 1125}
+{"id": 827, "sentence": "e. Acts as a buffer between software and hardware protocols", "source_text": "0130903086.txt", "offset": 1126}
+{"id": 828, "sentence": "17. List the functions of the LLC sublayer. (Choose two)", "source_text": "0130903086.txt", "offset": 1127}
+{"id": 829, "sentence": "a. Unique hardware addresses allow us to switch between different", "source_text": "0130903086.txt", "offset": 1128}
+{"id": 830, "sentence": "networks and still be uniquely identified", "source_text": "0130903086.txt", "offset": 1129}
+{"id": 831, "sentence": "b. Provides SSAP and DSAP for passing frames to the proper Network protocol", "source_text": "0130903086.txt", "offset": 1130}
+{"id": 832, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 1132}
+{"id": 833, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 1134}
+{"id": 834, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 1136}
+{"id": 835, "sentence": "Page 21", "source_text": "0130903086.txt", "offset": 1138}
+{"id": 836, "sentence": "Practice Questions", "source_text": "0130903086.txt", "offset": 1140}
+{"id": 837, "sentence": "21", "source_text": "0130903086.txt", "offset": 1142}
+{"id": 838, "sentence": "c. Provides error checking through CRC", "source_text": "0130903086.txt", "offset": 1144}
+{"id": 839, "sentence": "d. Provides an interface to the physical medium", "source_text": "0130903086.txt", "offset": 1145}
+{"id": 840, "sentence": "e. Acts as a buffer between software and hardware protocols", "source_text": "0130903086.txt", "offset": 1146}
+{"id": 841, "sentence": "18. Which layer is responsible for creating and disconnecting virtual circuits?", "source_text": "0130903086.txt", "offset": 1147}
+{"id": 842, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1148}
+{"id": 843, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1149}
+{"id": 844, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1150}
+{"id": 845, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1151}
+{"id": 846, "sentence": "Presentation", "source_text": "0130903086.txt", "offset": 1153}
+{"id": 847, "sentence": "Session", "source_text": "0130903086.txt", "offset": 1154}
+{"id": 848, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 1155}
+{"id": 849, "sentence": "Network", "source_text": "0130903086.txt", "offset": 1156}
+{"id": 850, "sentence": "19. Which of the following terms describes the address used at the Network", "source_text": "0130903086.txt", "offset": 1158}
+{"id": 851, "sentence": "layer?", "source_text": "0130903086.txt", "offset": 1159}
+{"id": 852, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1160}
+{"id": 853, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1161}
+{"id": 854, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1162}
+{"id": 855, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1163}
+{"id": 856, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 1165}
+{"id": 857, "sentence": "Logical", "source_text": "0130903086.txt", "offset": 1166}
+{"id": 858, "sentence": "MAC", "source_text": "0130903086.txt", "offset": 1167}
+{"id": 859, "sentence": "Host", "source_text": "0130903086.txt", "offset": 1168}
+{"id": 860, "sentence": "20. Place the following in the correct order of data encapsulation for the", "source_text": "0130903086.txt", "offset": 1170}
+{"id": 861, "sentence": "sending node.", "source_text": "0130903086.txt", "offset": 1171}
+{"id": 862, "sentence": "a. Encapsulating this packet or datagram into a frame with the MAC", "source_text": "0130903086.txt", "offset": 1172}
+{"id": 863, "sentence": "addresses", "source_text": "0130903086.txt", "offset": 1173}
+{"id": 864, "sentence": "b. Packaging it as a message to send to the receiver", "source_text": "0130903086.txt", "offset": 1174}
+{"id": 865, "sentence": "c. Sending the frame across the wire as individual bits", "source_text": "0130903086.txt", "offset": 1175}
+{"id": 866, "sentence": "d. Data encapsulation taking the data from the user", "source_text": "0130903086.txt", "offset": 1176}
+{"id": 867, "sentence": "e. Encapsulating the segment inside a packet or datagram with the", "source_text": "0130903086.txt", "offset": 1177}
+{"id": 868, "sentence": "network addressing information", "source_text": "0130903086.txt", "offset": 1178}
+{"id": 869, "sentence": "21. If your network diagnostic tool identifies a problem with the logical addressing, what layer of the OSI model would you be troubleshooting?", "source_text": "0130903086.txt", "offset": 1179}
+{"id": 870, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1180}
+{"id": 871, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1181}
+{"id": 872, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1182}
+{"id": 873, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1183}
+{"id": 874, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 1185}
+{"id": 875, "sentence": "Network", "source_text": "0130903086.txt", "offset": 1186}
+{"id": 876, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 1187}
+{"id": 877, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 1188}
+{"id": 878, "sentence": "22. What layer would you troubleshoot when no link connectivity is detected?", "source_text": "0130903086.txt", "offset": 1190}
+{"id": 879, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1191}
+{"id": 880, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1192}
+{"id": 881, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1193}
+{"id": 882, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1194}
+{"id": 883, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 1196}
+{"id": 884, "sentence": "Session", "source_text": "0130903086.txt", "offset": 1197}
+{"id": 885, "sentence": "Network", "source_text": "0130903086.txt", "offset": 1198}
+{"id": 886, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 1199}
+{"id": 887, "sentence": "23. If two network cards were suspected of having the same MAC address,", "source_text": "0130903086.txt", "offset": 1201}
+{"id": 888, "sentence": "what layer would you troubleshoot to determine the conflict?", "source_text": "0130903086.txt", "offset": 1202}
+{"id": 889, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1203}
+{"id": 890, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1204}
+{"id": 891, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1205}
+{"id": 892, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1206}
+{"id": 893, "sentence": "Network", "source_text": "0130903086.txt", "offset": 1208}
+{"id": 894, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 1209}
+{"id": 895, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 1210}
+{"id": 896, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 1211}
+{"id": 897, "sentence": "ch01.qxd", "source_text": "0130903086.txt", "offset": 1213}
+{"id": 898, "sentence": "1/3/2001", "source_text": "0130903086.txt", "offset": 1215}
+{"id": 899, "sentence": "22", "source_text": "0130903086.txt", "offset": 1217}
+{"id": 900, "sentence": "9:44 AM", "source_text": "0130903086.txt", "offset": 1219}
+{"id": 901, "sentence": "Chapter 1", "source_text": "0130903086.txt", "offset": 1221}
+{"id": 902, "sentence": "Page 22", "source_text": "0130903086.txt", "offset": 1223}
+{"id": 903, "sentence": "Introduction to Networking and the OSI Model", "source_text": "0130903086.txt", "offset": 1227}
+{"id": 904, "sentence": "24. One of your nodes requests a window size of 1. This is having adverse", "source_text": "0130903086.txt", "offset": 1229}
+{"id": 905, "sentence": "effects on the network and you need to change it. What layer of the OSI", "source_text": "0130903086.txt", "offset": 1230}
+{"id": 906, "sentence": "model is responsible for this?", "source_text": "0130903086.txt", "offset": 1231}
+{"id": 907, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1232}
+{"id": 908, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1233}
+{"id": 909, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1234}
+{"id": 910, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1235}
+{"id": 911, "sentence": "Transport", "source_text": "0130903086.txt", "offset": 1237}
+{"id": 912, "sentence": "Network", "source_text": "0130903086.txt", "offset": 1238}
+{"id": 913, "sentence": "Data Link", "source_text": "0130903086.txt", "offset": 1239}
+{"id": 914, "sentence": "Physical", "source_text": "0130903086.txt", "offset": 1240}
+{"id": 915, "sentence": "25. Identify the MAC address:", "source_text": "0130903086.txt", "offset": 1242}
+{"id": 916, "sentence": "a.", "source_text": "0130903086.txt", "offset": 1243}
+{"id": 917, "sentence": "b.", "source_text": "0130903086.txt", "offset": 1244}
+{"id": 918, "sentence": "c.", "source_text": "0130903086.txt", "offset": 1245}
+{"id": 919, "sentence": "d.", "source_text": "0130903086.txt", "offset": 1246}
+{"id": 920, "sentence": "00230405", "source_text": "0130903086.txt", "offset": 1248}
+{"id": 921, "sentence": "00-23-04-05", "source_text": "0130903086.txt", "offset": 1249}
+{"id": 922, "sentence": "f4e3d2c1b0", "source_text": "0130903086.txt", "offset": 1250}
+{"id": 923, "sentence": "f4-e3-d2-c1-b0-a9", "source_text": "0130903086.txt", "offset": 1251}
+{"id": 924, "sentence": "Advanced Bash-Scripting Guide", "source_text": "abs-guide.txt", "offset": 1}
+{"id": 925, "sentence": "An in-depth exploration of the art of shell scripting", "source_text": "abs-guide.txt", "offset": 3}
+{"id": 926, "sentence": "Mendel Cooper", "source_text": "abs-guide.txt", "offset": 4}
+{"id": 927, "sentence": "<thegrendel.abs@gmail.com>", "source_text": "abs-guide.txt", "offset": 6}
+{"id": 928, "sentence": "10", "source_text": "abs-guide.txt", "offset": 7}
+{"id": 929, "sentence": "10 Mar 2014", "source_text": "abs-guide.txt", "offset": 8}
+{"id": 930, "sentence": "Revision History", "source_text": "abs-guide.txt", "offset": 9}
+{"id": 931, "sentence": "Revision 6.5", "source_text": "abs-guide.txt", "offset": 10}
+{"id": 932, "sentence": "'TUNGSTENBERRY' release", "source_text": "abs-guide.txt", "offset": 11}
+{"id": 933, "sentence": "Revision 6.6", "source_text": "abs-guide.txt", "offset": 12}
+{"id": 934, "sentence": "'YTTERBIUMBERRY' release", "source_text": "abs-guide.txt", "offset": 13}
+{"id": 935, "sentence": "Revision 10", "source_text": "abs-guide.txt", "offset": 14}
+{"id": 936, "sentence": "'PUBLICDOMAIN' release", "source_text": "abs-guide.txt", "offset": 15}
+{"id": 937, "sentence": "05 Apr 2012", "source_text": "abs-guide.txt", "offset": 17}
+{"id": 938, "sentence": "Revised by: mc", "source_text": "abs-guide.txt", "offset": 19}
+{"id": 939, "sentence": "27 Nov 2012", "source_text": "abs-guide.txt", "offset": 21}
+{"id": 940, "sentence": "Revised by: mc", "source_text": "abs-guide.txt", "offset": 23}
+{"id": 941, "sentence": "10 Mar 2014", "source_text": "abs-guide.txt", "offset": 25}
+{"id": 942, "sentence": "Revised by: mc", "source_text": "abs-guide.txt", "offset": 27}
+{"id": 943, "sentence": "This tutorial assumes no previous knowledge of scripting or programming, yet progresses rapidly toward an", "source_text": "abs-guide.txt", "offset": 29}
+{"id": 944, "sentence": "intermediate/advanced level of instruction . . . all the while sneaking in little nuggets of UNIX® wisdom and", "source_text": "abs-guide.txt", "offset": 30}
+{"id": 945, "sentence": "lore. It serves as a textbook, a manual for self-study, and as a reference and source of knowledge on shell", "source_text": "abs-guide.txt", "offset": 31}
+{"id": 946, "sentence": "scripting techniques. The exercises and heavily-commented examples invite active reader participation, under", "source_text": "abs-guide.txt", "offset": 32}
+{"id": 947, "sentence": "the premise that the only way to really learn scripting is to write scripts.", "source_text": "abs-guide.txt", "offset": 33}
+{"id": 948, "sentence": "This book is suitable for classroom use as a general introduction to programming concepts.", "source_text": "abs-guide.txt", "offset": 34}
+{"id": 949, "sentence": "This document is herewith granted to the Public Domain. No copyright!", "source_text": "abs-guide.txt", "offset": 35}
+{"id": 950, "sentence": "Dedication", "source_text": "abs-guide.txt", "offset": 37}
+{"id": 951, "sentence": "For Anita, the source of all the magic", "source_text": "abs-guide.txt", "offset": 38}
+{"id": 952, "sentence": "Advanced Bash-Scripting Guide", "source_text": "abs-guide.txt", "offset": 40}
+{"id": 953, "sentence": "Table of Contents", "source_text": "abs-guide.txt", "offset": 42}
+{"id": 954, "sentence": "Chapter 1. Shell Programming!.........................................................................................................................1", "source_text": "abs-guide.txt", "offset": 43}
+{"id": 955, "sentence": "Chapter 2. Starting Off With a Sha-Bang........................................................................................................3", "source_text": "abs-guide.txt", "offset": 44}
+{"id": 956, "sentence": "2.1. Invoking the script............................................................................................................................6", "source_text": "abs-guide.txt", "offset": 45}
+{"id": 957, "sentence": "2.2. Preliminary Exercises.......................................................................................................................6", "source_text": "abs-guide.txt", "offset": 46}
+{"id": 958, "sentence": "Part 2. Basics.......................................................................................................................................................7", "source_text": "abs-guide.txt", "offset": 47}
+{"id": 959, "sentence": "Chapter 3. Special Characters...........................................................................................................................8", "source_text": "abs-guide.txt", "offset": 48}
+{"id": 960, "sentence": "Chapter 4. Introduction to Variables and Parameters..................................................................................30", "source_text": "abs-guide.txt", "offset": 49}
+{"id": 961, "sentence": "4.1. Variable Substitution......................................................................................................................30", "source_text": "abs-guide.txt", "offset": 50}
+{"id": 962, "sentence": "4.2. Variable Assignment.......................................................................................................................33", "source_text": "abs-guide.txt", "offset": 51}
+{"id": 963, "sentence": "4.3. Bash Variables Are Untyped..........................................................................................................34", "source_text": "abs-guide.txt", "offset": 52}
+{"id": 964, "sentence": "4.4. Special Variable Types...................................................................................................................35", "source_text": "abs-guide.txt", "offset": 53}
+{"id": 965, "sentence": "Chapter 5. Quoting...........................................................................................................................................41", "source_text": "abs-guide.txt", "offset": 54}
+{"id": 966, "sentence": "5.1. Quoting Variables...........................................................................................................................41", "source_text": "abs-guide.txt", "offset": 55}
+{"id": 967, "sentence": "5.2. Escaping..........................................................................................................................................43", "source_text": "abs-guide.txt", "offset": 56}
+{"id": 968, "sentence": "Chapter 6. Exit and Exit Status.......................................................................................................................51", "source_text": "abs-guide.txt", "offset": 57}
+{"id": 969, "sentence": "Chapter 7. Tests................................................................................................................................................54", "source_text": "abs-guide.txt", "offset": 58}
+{"id": 970, "sentence": "7.1. Test Constructs...............................................................................................................................54", "source_text": "abs-guide.txt", "offset": 59}
+{"id": 971, "sentence": "7.2. File test operators............................................................................................................................62", "source_text": "abs-guide.txt", "offset": 60}
+{"id": 972, "sentence": "7.3. Other Comparison Operators..........................................................................................................65", "source_text": "abs-guide.txt", "offset": 61}
+{"id": 973, "sentence": "7.4. Nested if/then Condition Tests.......................................................................................................70", "source_text": "abs-guide.txt", "offset": 62}
+{"id": 974, "sentence": "7.5. Testing Your Knowledge of Tests..................................................................................................71", "source_text": "abs-guide.txt", "offset": 63}
+{"id": 975, "sentence": "Chapter 8. Operations and Related Topics....................................................................................................72", "source_text": "abs-guide.txt", "offset": 64}
+{"id": 976, "sentence": "8.1. Operators.........................................................................................................................................72", "source_text": "abs-guide.txt", "offset": 65}
+{"id": 977, "sentence": "8.2. Numerical Constants.......................................................................................................................78", "source_text": "abs-guide.txt", "offset": 66}
+{"id": 978, "sentence": "8.3. The Double-Parentheses Construct.................................................................................................80", "source_text": "abs-guide.txt", "offset": 67}
+{"id": 979, "sentence": "8.4. Operator Precedence.......................................................................................................................81", "source_text": "abs-guide.txt", "offset": 68}
+{"id": 980, "sentence": "Part 3. Beyond the Basics.................................................................................................................................84", "source_text": "abs-guide.txt", "offset": 69}
+{"id": 981, "sentence": "Chapter 9. Another Look at Variables...........................................................................................................85", "source_text": "abs-guide.txt", "offset": 70}
+{"id": 982, "sentence": "9.1. Internal Variables............................................................................................................................85", "source_text": "abs-guide.txt", "offset": 71}
+{"id": 983, "sentence": "9.2. Typing variables: declare or typeset.............................................................................................104", "source_text": "abs-guide.txt", "offset": 72}
+{"id": 984, "sentence": "9.2.1. Another use for declare.......................................................................................................107", "source_text": "abs-guide.txt", "offset": 73}
+{"id": 985, "sentence": "9.3. $RANDOM: generate random integer..........................................................................................107", "source_text": "abs-guide.txt", "offset": 74}
+{"id": 986, "sentence": "Chapter 10. Manipulating Variables.............................................................................................................119", "source_text": "abs-guide.txt", "offset": 75}
+{"id": 987, "sentence": "10.1. Manipulating Strings...................................................................................................................119", "source_text": "abs-guide.txt", "offset": 76}
+{"id": 988, "sentence": "10.1.1. Manipulating strings using awk........................................................................................127", "source_text": "abs-guide.txt", "offset": 77}
+{"id": 989, "sentence": "10.1.2. Further Reference..............................................................................................................127", "source_text": "abs-guide.txt", "offset": 78}
+{"id": 990, "sentence": "10.2. Parameter Substitution................................................................................................................128", "source_text": "abs-guide.txt", "offset": 79}
+{"id": 991, "sentence": "i", "source_text": "abs-guide.txt", "offset": 80}
+{"id": 992, "sentence": "Advanced Bash-Scripting Guide", "source_text": "abs-guide.txt", "offset": 82}
+{"id": 993, "sentence": "Table of Contents", "source_text": "abs-guide.txt", "offset": 84}
+{"id": 994, "sentence": "Chapter 11. Loops and Branches..................................................................................................................138", "source_text": "abs-guide.txt", "offset": 85}
+{"id": 995, "sentence": "11.1. Loops..........................................................................................................................................138", "source_text": "abs-guide.txt", "offset": 86}
+{"id": 996, "sentence": "11.2. Nested Loops..............................................................................................................................152", "source_text": "abs-guide.txt", "offset": 87}
+{"id": 997, "sentence": "11.3. Loop Control...............................................................................................................................153", "source_text": "abs-guide.txt", "offset": 88}
+{"id": 998, "sentence": "11.4. Testing and Branching................................................................................................................156", "source_text": "abs-guide.txt", "offset": 89}
+{"id": 999, "sentence": "Chapter 12. Command Substitution.............................................................................................................165", "source_text": "abs-guide.txt", "offset": 90}
+{"id": 1000, "sentence": "Chapter 13. Arithmetic Expansion................................................................................................................171", "source_text": "abs-guide.txt", "offset": 91}

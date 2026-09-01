@@ -9,3 +9,7 @@ data/semantic_metadata.jsonl
 
 # The supplied corpus is input data, not source code for the debug version.
 Archive (2).zip
+
+.partb_venv/
+.uv-cache/
+.uv-python/ 
