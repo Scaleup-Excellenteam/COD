@@ -1,13 +1,17 @@
 """Focused tests for satellite-local FAISS semantic retrieval."""
 
 from pathlib import Path
+import ast
 import json
+import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import faiss
 import numpy as np
 
+import semantic.search as search_module
 from semantic.search import (
     EMBEDDING_DIMENSIONS,
     SemanticQueryError,
@@ -124,6 +128,87 @@ class SemanticSearchTests(unittest.TestCase):
 
         with self.assertRaisesRegex(SemanticSearchError, "dimension is 3"):
             SemanticSearchEngine.from_files(self.index_path, self.metadata_path)
+
+    def test_loads_artifacts_once_then_searches_from_memory(self) -> None:
+        self.write_artifacts([self.vector(1, 0), self.vector(0, 1)])
+
+        with patch(
+            "semantic.search.faiss.read_index", wraps=faiss.read_index
+        ) as read_index:
+            engine = SemanticSearchEngine.from_files(
+                self.index_path, self.metadata_path
+            )
+            engine.search(self.vector(1, 0))
+            engine.search(self.vector(0, 1))
+
+        read_index.assert_called_once_with(str(self.index_path))
+
+    def test_rejects_missing_metadata_corrupt_index_and_invalid_positions(
+        self,
+    ) -> None:
+        self.write_artifacts([self.vector(1, 0)])
+        self.metadata_path.unlink()
+        with self.assertRaisesRegex(SemanticSearchError, "metadata was not found"):
+            SemanticSearchEngine.from_files(self.index_path, self.metadata_path)
+
+        self.metadata_path.write_text(
+            json.dumps(
+                {
+                    "id": 1,
+                    "sentence": "Sentence.",
+                    "source_text": "source.txt",
+                    "offset": 1,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.index_path.write_bytes(b"not a FAISS index")
+        with self.assertRaisesRegex(SemanticSearchError, "Could not load FAISS"):
+            SemanticSearchEngine.from_files(self.index_path, self.metadata_path)
+
+        self.write_artifacts([self.vector(1, 0)])
+        engine = SemanticSearchEngine.from_files(
+            self.index_path, self.metadata_path
+        )
+
+        class InvalidPositionIndex:
+            @staticmethod
+            def search(query, count):
+                return (
+                    np.zeros((1, count), dtype=np.float32),
+                    np.asarray([[99, -1, -1, -1, -1]], dtype=np.int64),
+                )
+
+        engine._index = InvalidPositionIndex()
+        with self.assertRaisesRegex(SemanticSearchError, "position 99"):
+            engine.search(self.vector(1, 0))
+
+    def test_satellite_path_needs_no_key_network_gemini_or_part_a(self) -> None:
+        self.write_artifacts([self.vector(1, 0)])
+        source = Path(search_module.__file__).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        imported_roots = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported_roots.update(
+                    alias.name.partition(".")[0] for alias in node.names
+                )
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported_roots.add(node.module.partition(".")[0])
+
+        self.assertTrue(
+            imported_roots.isdisjoint({"autocomplete", "google", "config"})
+        )
+        with patch.dict(os.environ, {}, clear=True), patch(
+            "socket.socket", side_effect=AssertionError("network attempted")
+        ):
+            engine = SemanticSearchEngine.from_files(
+                self.index_path, self.metadata_path
+            )
+            results = engine.search(self.vector(1, 0))
+
+        self.assertEqual(results[0].sentence, "Original sentence 0.")
 
 
 if __name__ == "__main__":

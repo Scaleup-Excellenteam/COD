@@ -65,12 +65,14 @@ class FaissIndexBuilderTests(unittest.TestCase):
         self.assertEqual(index.ntotal, len(metadata))
         self.assertEqual([record["id"] for record in metadata], [2, 1])
         self.assertTrue(all("embedding" not in record for record in metadata))
+        self.assertEqual(reconstructed.dtype, np.float32)
         np.testing.assert_allclose(np.linalg.norm(reconstructed, axis=1), [1.0, 1.0])
 
     def test_rejects_invalid_vectors_and_preserves_existing_outputs(self) -> None:
         invalid_vectors = [
             [0.0] * (EMBEDDING_DIMENSIONS - 1),
             [0.0] * (EMBEDDING_DIMENSIONS - 1) + [True],
+            [0.0] * (EMBEDDING_DIMENSIONS - 1) + ["not numeric"],
             [0.0] * EMBEDDING_DIMENSIONS,
         ]
         for vector in invalid_vectors:
