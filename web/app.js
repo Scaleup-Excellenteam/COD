@@ -2,6 +2,7 @@ const queryInput = document.querySelector("#query");
 const searchButton = document.querySelector("#search-button");
 const voiceButton = document.querySelector("#voice-button");
 const voiceStatus = document.querySelector("#voice-status");
+const voiceLanguage = document.querySelector("#voice-language");
 const resetButton = document.querySelector("#reset-button");
 const resultArea = document.querySelector("#result-area");
 const diagnosticsPanel = document.querySelector("#diagnostics-panel");
@@ -41,7 +42,7 @@ function voiceErrorMessage(error) {
   return messages[error] || "Voice typing stopped unexpectedly. Try again.";
 }
 
-function selectedVoiceLanguage() {
+function preferredVoiceLanguage() {
   const preferredLanguages = navigator.languages || [navigator.language || "en-US"];
   return preferredLanguages.some((language) => language.toLowerCase().startsWith("he"))
     ? "he-IL"
@@ -72,8 +73,11 @@ function finishVoiceInput(transcript) {
 function setupVoiceTyping() {
   if (!SpeechRecognition) {
     voiceButton.hidden = true;
+    voiceLanguage.closest(".voice-language").hidden = true;
     return;
   }
+
+  voiceLanguage.value = preferredVoiceLanguage();
 
   recognition = new SpeechRecognition();
   recognition.continuous = false;
@@ -121,7 +125,7 @@ function setupVoiceTyping() {
     }
     queryBeforeVoiceInput = queryInput.value.trim() ? `${queryInput.value.trim()} ` : "";
     finalTranscript = "";
-    recognition.lang = selectedVoiceLanguage();
+    recognition.lang = voiceLanguage.value;
     try {
       recognition.start();
     } catch (_error) {

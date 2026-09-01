@@ -44,6 +44,8 @@ button:disabled { cursor: wait; opacity: .65; transform: none; }
 .voice-button:hover { background: #e2eeff; box-shadow: none; }
 .voice-button.is-listening { color: #fff; background: #d33449; border-color: #d33449; box-shadow: 0 9px 17px rgba(185, 33, 58, .23); }
 .voice-status { color: #245fc9; font-weight: 700; }
+.voice-language { display: flex; align-items: center; gap: 7px; margin: 0; color: #71809a; font-size: 12px; font-weight: 700; }
+.voice-language select { border: 1px solid #c9d9f2; border-radius: 7px; padding: 4px 7px; color: #49617f; background: #fff; font: inherit; }
 .helper-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 15px; color: #70809a; font-size: 14px; }
 kbd { padding: 2px 6px; border: 1px solid #cad5e6; border-bottom-width: 2px; border-radius: 5px; background: #fff; color: #4e5e77; font-family: inherit; font-size: 12px; }
 .text-button { color: #2568e8; background: transparent; box-shadow: none; padding: 2px; }

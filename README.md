@@ -53,9 +53,10 @@ phrase. Interim text appears in the field, and one local search runs after the
 browser returns a final transcript. It uses no API key or server dependency.
 
 When typed text or a voice transcript is Hebrew, the local server translates it
-to English before searching. Voice recognition automatically uses Hebrew when it
-is one of the browser's preferred languages, and English otherwise. The
-translation model is a one-time download and uses no cloud translation API:
+to English before searching. Choose **English** or **עברית** from **Voice
+language** before recording; the browser's preferred language is selected
+initially. The translation model is a one-time download and uses no cloud
+translation API:
 
 ```powershell
 py -m pip install -r requirements.txt
