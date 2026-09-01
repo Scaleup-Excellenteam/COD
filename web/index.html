@@ -15,10 +15,12 @@
         <label for="query">What are you looking for?</label>
         <div class="search-row">
           <input id="query" type="text" autocomplete="off" spellcheck="false" placeholder="Try: python" autofocus />
+          <button id="voice-button" type="button" class="voice-button" aria-pressed="false" aria-label="Start voice typing" title="Start voice typing">🎙</button>
           <button id="search-button" type="button">Search</button>
         </div>
         <div class="helper-row">
           <button id="reset-button" type="button" class="text-button">Reset</button>
+          <span id="voice-status" class="voice-status" role="status" aria-live="polite" hidden></span>
         </div>
         <div class="engine-tools">
           <label class="upload-button" for="index-file">

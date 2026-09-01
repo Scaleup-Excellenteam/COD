@@ -41,9 +41,21 @@ py web_app.py
 ```
 
 The browser opens `http://127.0.0.1:8000`. The server listens on this computer
-only, and the search text is never sent to an external service. Press `Ctrl+C`
+only, and typed search text is never sent to an external service. Press `Ctrl+C`
 in the terminal to stop it. Use `--rebuild-index` to refresh its index, or
 `--port 8080` to select another local port.
+
+### Voice typing
+
+In a browser that supports the Web Speech API (commonly Chrome or Edge), select
+**Voice** beside the search field, allow microphone access, and speak a search
+phrase. Interim text appears in the field, and one local search runs after the
+browser returns a final transcript. It uses no API key or server dependency.
+
+Speech recognition is supplied by the browser, not by this local Python server.
+Depending on the browser and its configuration, audio may be processed by that
+browser's speech service. Users requiring guaranteed offline transcription
+should use a local model such as Vosk instead.
 
 ## Why queries are fast
 

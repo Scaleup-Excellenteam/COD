@@ -1,11 +1,108 @@
 const queryInput = document.querySelector("#query");
 const searchButton = document.querySelector("#search-button");
+const voiceButton = document.querySelector("#voice-button");
+const voiceStatus = document.querySelector("#voice-status");
 const resetButton = document.querySelector("#reset-button");
 const resultArea = document.querySelector("#result-area");
 const diagnosticsPanel = document.querySelector("#diagnostics-panel");
 const diagnosticsValues = document.querySelector("#diagnostics-values");
 const indexFileInput = document.querySelector("#index-file");
 const indexMessage = document.querySelector("#index-message");
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let isListening = false;
+let queryBeforeVoiceInput = "";
+let finalTranscript = "";
+
+function setVoiceStatus(message) {
+  voiceStatus.textContent = message;
+  voiceStatus.hidden = !message;
+}
+
+function setListening(listening) {
+  isListening = listening;
+  voiceButton.setAttribute("aria-pressed", String(listening));
+  voiceButton.setAttribute("aria-label", listening ? "Stop voice typing" : "Start voice typing");
+  voiceButton.title = listening ? "Stop voice typing" : "Start voice typing";
+  voiceButton.classList.toggle("is-listening", listening);
+  voiceButton.textContent = listening ? "■" : "🎙";
+}
+
+function voiceErrorMessage(error) {
+  const messages = {
+    "not-allowed": "Microphone permission was denied. Allow it in your browser and try again.",
+    "service-not-allowed": "Speech recognition is unavailable in this browser.",
+    "no-speech": "No speech was detected. Try again.",
+    "audio-capture": "No microphone was found.",
+    network: "The browser's speech service is unavailable. Check your connection and try again.",
+    "language-not-supported": "Your browser does not support voice typing in the selected language.",
+  };
+  return messages[error] || "Voice typing stopped unexpectedly. Try again.";
+}
+
+function setupVoiceTyping() {
+  if (!SpeechRecognition) {
+    voiceButton.hidden = true;
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = navigator.language || "en-US";
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    setListening(true);
+    setVoiceStatus("Listening… speak your search phrase.");
+  };
+
+  recognition.onresult = (event) => {
+    let interimTranscript = "";
+    for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      const transcript = event.results[index][0].transcript;
+      if (event.results[index].isFinal) {
+        finalTranscript += transcript;
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+    queryInput.value = `${queryBeforeVoiceInput}${finalTranscript}${interimTranscript}`.trimStart();
+    if (finalTranscript) setVoiceStatus("Voice input received. Searching…");
+  };
+
+  recognition.onerror = (event) => {
+    setVoiceStatus(voiceErrorMessage(event.error));
+  };
+
+  recognition.onend = () => {
+    const hasTranscript = Boolean(finalTranscript.trim());
+    setListening(false);
+    if (hasTranscript) {
+      queryInput.value = `${queryBeforeVoiceInput}${finalTranscript}`.trimStart();
+      setVoiceStatus("");
+      search();
+    } else if (!voiceStatus.textContent) {
+      setVoiceStatus("Voice typing stopped.");
+    }
+    finalTranscript = "";
+  };
+
+  voiceButton.addEventListener("click", () => {
+    if (isListening) {
+      recognition.stop();
+      return;
+    }
+    queryBeforeVoiceInput = queryInput.value.trim() ? `${queryInput.value.trim()} ` : "";
+    finalTranscript = "";
+    try {
+      recognition.start();
+    } catch (_error) {
+      setVoiceStatus("Voice typing is already starting. Please wait.");
+    }
+  });
+}
 
 function escapeHtml(value) {
   const element = document.createElement("span");
@@ -213,3 +310,4 @@ async function loadActiveIndex() {
 }
 
 loadActiveIndex();
+setupVoiceTyping();

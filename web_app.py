@@ -1,7 +1,9 @@
 """Local browser UI for the autocomplete engine.
 
-Run ``py web_app.py`` and open http://127.0.0.1:8000.  The page is served
-locally; text typed into it never leaves this computer.
+Run ``py web_app.py`` and open http://127.0.0.1:8000. The page is served
+locally; typed search text never leaves this computer. Optional voice typing
+uses the browser's speech-recognition service, whose privacy behavior depends
+on the browser and its configuration.
 """
 
 from __future__ import annotations

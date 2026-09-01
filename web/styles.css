@@ -40,6 +40,10 @@ input:focus { border-color: #3979f6; box-shadow: 0 0 0 5px #e6eeff; background: 
 button { border: 0; border-radius: 13px; padding: 0 26px; font: inherit; font-weight: 800; cursor: pointer; color: #fff; background: linear-gradient(135deg, #397cf3, #225dd0); box-shadow: 0 9px 17px rgba(37, 95, 207, .23); transition: transform .15s ease, box-shadow .15s ease, filter .15s ease; }
 button:hover { filter: brightness(1.05); box-shadow: 0 12px 22px rgba(37, 95, 207, .30); transform: translateY(-2px); }
 button:disabled { cursor: wait; opacity: .65; transform: none; }
+.voice-button { flex: 0 0 auto; width: 48px; min-width: 48px; padding: 0; font-size: 19px; color: #245fc9; background: #edf4ff; box-shadow: none; border: 1px solid #c9d9f2; }
+.voice-button:hover { background: #e2eeff; box-shadow: none; }
+.voice-button.is-listening { color: #fff; background: #d33449; border-color: #d33449; box-shadow: 0 9px 17px rgba(185, 33, 58, .23); }
+.voice-status { color: #245fc9; font-weight: 700; }
 .helper-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 15px; color: #70809a; font-size: 14px; }
 kbd { padding: 2px 6px; border: 1px solid #cad5e6; border-bottom-width: 2px; border-radius: 5px; background: #fff; color: #4e5e77; font-family: inherit; font-size: 12px; }
 .text-button { color: #2568e8; background: transparent; box-shadow: none; padding: 2px; }
