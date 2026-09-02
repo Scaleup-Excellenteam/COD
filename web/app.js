@@ -364,7 +364,7 @@ async function loadLocalIndexes() {
       localIndexSelect.append(option);
     }
     activateIndexButton.disabled = !indexes.length;
-    if (!indexes.length) indexMessage.textContent = "No .sqlite3 files were found beside the active index.";
+    if (!indexes.length) indexMessage.textContent = "No .sqlite3 files were found in the project folder or its subfolders.";
   } catch (error) {
     localIndexSelect.replaceChildren();
     activateIndexButton.disabled = true;

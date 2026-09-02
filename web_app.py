@@ -206,13 +206,20 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
         self._send_json({"message": "Index accepted and loaded.", **self._index_summary()})
 
     def _available_local_indexes(self) -> list[dict[str, Any]]:
-        """List selectable SQLite indexes already stored beside the active index."""
+        """List selectable SQLite indexes in the project index directory tree."""
 
         index_directory: Path = getattr(self.server, "index_directory")
         active_name = getattr(self.server, "active_index_name")
         return [
-            {"name": path.name, "size_bytes": path.stat().st_size, "active": path.name == active_name}
-            for path in sorted(index_directory.glob("*.sqlite3"), key=lambda item: item.name.casefold())
+            {
+                "name": path.relative_to(index_directory).as_posix(),
+                "size_bytes": path.stat().st_size,
+                "active": path.relative_to(index_directory).as_posix() == active_name,
+            }
+            for path in sorted(
+                index_directory.rglob("*.sqlite3"),
+                key=lambda item: item.relative_to(index_directory).as_posix().casefold(),
+            )
             if path.is_file()
         ]
 
@@ -225,14 +232,18 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
                 raise ValueError("The index-selection request is invalid.")
             payload = json.loads(self.rfile.read(content_length).decode("utf-8"))
             index_name = payload.get("index_name")
-            if not isinstance(index_name, str) or Path(index_name).name != index_name:
+            if not isinstance(index_name, str) or Path(index_name).is_absolute():
                 raise ValueError("Please select an available local index.")
             if not index_name.lower().endswith(".sqlite3"):
                 raise ValueError("Please select an index.sqlite3 file.")
 
             index_directory: Path = getattr(self.server, "index_directory")
             candidate_path = (index_directory / index_name).resolve()
-            if candidate_path.parent != index_directory.resolve() or not candidate_path.is_file():
+            try:
+                candidate_path.relative_to(index_directory.resolve())
+            except ValueError:
+                raise ValueError("Please select an available local index.") from None
+            if not candidate_path.is_file():
                 raise ValueError("The selected index file was not found.")
 
             previous_engine: AutocompleteEngine = getattr(self.server, "engine")
@@ -244,7 +255,7 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
         previous_engine.close()
         setattr(self.server, "engine", candidate)
         setattr(self.server, "persistent_index_path", candidate_path)
-        setattr(self.server, "active_index_name", candidate_path.name)
+        setattr(self.server, "active_index_name", index_name)
         setattr(self.server, "active_archive_name", archive_path.name)
         self._send_json({"message": "Local index activated.", **self._index_summary()})
 
@@ -255,7 +266,12 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
 
         index_directory: Path = getattr(self.server, "index_directory")
         archive_candidates = [Path(current_archive_path)]
-        archive_candidates.extend(sorted(index_directory.glob("*.zip"), key=lambda item: item.name.casefold()))
+        archive_candidates.extend(
+            sorted(
+                index_directory.rglob("*.zip"),
+                key=lambda item: item.relative_to(index_directory).as_posix().casefold(),
+            )
+        )
         checked_paths = set()
         for archive_path in archive_candidates:
             resolved_archive = archive_path.resolve()

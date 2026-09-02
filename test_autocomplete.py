@@ -315,8 +315,10 @@ class AutocompleteSpecificationTests(unittest.TestCase):
 
     def test_local_index_selection_switches_to_its_matching_archive(self) -> None:
         initial_index = Path(self.temporary_directory.name) / "index.sqlite3"
-        alternate_archive = Path(self.temporary_directory.name) / "MORE_DATA.zip"
-        alternate_index = Path(self.temporary_directory.name) / "more_data_index.sqlite3"
+        alternate_directory = Path(self.temporary_directory.name) / "additional-data"
+        alternate_directory.mkdir()
+        alternate_archive = alternate_directory / "MORE_DATA.zip"
+        alternate_index = alternate_directory / "more_data_index.sqlite3"
         with zipfile.ZipFile(alternate_archive, "w") as archive:
             archive.writestr("more.txt", "More data result.\n")
 
@@ -335,7 +337,10 @@ class AutocompleteSpecificationTests(unittest.TestCase):
         def client() -> None:
             connection = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=5)
             try:
-                payload = json.dumps({"index_name": alternate_index.name})
+                connection.request("GET", "/api/indexes")
+                response = connection.getresponse()
+                result.put((response.status, json.loads(response.read())))
+                payload = json.dumps({"index_name": "additional-data/more_data_index.sqlite3"})
                 connection.request("POST", "/api/index/select", payload, {"Content-Type": "application/json"})
                 response = connection.getresponse()
                 result.put((response.status, json.loads(response.read())))
@@ -346,10 +351,17 @@ class AutocompleteSpecificationTests(unittest.TestCase):
         worker.start()
         try:
             server.handle_request()
+            server.handle_request()
             worker.join(timeout=5)
+            list_status, index_list = result.get(timeout=1)
+            self.assertEqual(list_status, 200)
+            self.assertIn(
+                "additional-data/more_data_index.sqlite3",
+                [index["name"] for index in index_list["indexes"]],
+            )
             status, payload = result.get(timeout=1)
             self.assertEqual(status, 200)
-            self.assertEqual(payload["index_name"], alternate_index.name)
+            self.assertEqual(payload["index_name"], "additional-data/more_data_index.sqlite3")
             self.assertEqual(payload["archive_name"], alternate_archive.name)
             active_engine = server.engine  # type: ignore[attr-defined]
             self.assertEqual(
