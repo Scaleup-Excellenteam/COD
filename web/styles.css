@@ -51,9 +51,9 @@ kbd { padding: 2px 6px; border: 1px solid #cad5e6; border-bottom-width: 2px; bor
 .text-button { color: #2568e8; background: transparent; box-shadow: none; padding: 2px; }
 .text-button:hover { color: #164db3; background: transparent; transform: none; }
 .engine-tools { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 20px; }
-.upload-button { display: inline-flex; align-items: center; min-height: 36px; margin: 0; padding: 8px 12px; border: 1px solid #c9d9f2; border-radius: 9px; color: #235fca; background: #f6f9ff; font-size: 13px; font-weight: 800; cursor: pointer; }
-.upload-button:hover { border-color: #8eb5f5; background: #edf4ff; }
-.upload-button input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.local-index-label { display: flex; flex: 1; align-items: center; gap: 9px; margin: 0; color: #52647f; font-size: 13px; }
+.local-index-label select { flex: 1; min-width: 0; border: 1px solid #c9d9f2; border-radius: 9px; padding: 9px 11px; color: #235fca; background: #f6f9ff; font: inherit; font-weight: 700; }
+.engine-tools > button { min-height: 38px; padding: 0 16px; font-size: 13px; }
 .index-message { min-height: 18px; margin: 10px 0 0; color: #71809a; font-size: 12px; }
 
 .result-area { margin-top: 32px; }

@@ -7,7 +7,8 @@ const resetButton = document.querySelector("#reset-button");
 const resultArea = document.querySelector("#result-area");
 const diagnosticsPanel = document.querySelector("#diagnostics-panel");
 const diagnosticsValues = document.querySelector("#diagnostics-values");
-const indexFileInput = document.querySelector("#index-file");
+const localIndexSelect = document.querySelector("#local-index");
+const activateIndexButton = document.querySelector("#activate-index-button");
 const indexMessage = document.querySelector("#index-message");
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -305,34 +306,37 @@ diagnosticsValues.addEventListener("click", (event) => {
   details.hidden = isExpanded;
 });
 
-indexFileInput.addEventListener("change", async () => {
-  const [file] = indexFileInput.files;
-  if (!file) return;
-  if (!file.name.toLowerCase().endsWith(".sqlite3")) {
-    indexMessage.textContent = "Please select an index.sqlite3 file.";
-    indexFileInput.value = "";
+activateIndexButton.addEventListener("click", async () => {
+  const indexName = localIndexSelect.value;
+  if (!indexName) {
+    indexMessage.textContent = "No local SQLite index is available.";
     return;
   }
 
-  indexMessage.textContent = `Uploading ${file.name} and validating it against the active archive...`;
+  activateIndexButton.disabled = true;
+  activateIndexButton.textContent = "Activating…";
+  indexMessage.textContent = `Validating and activating ${indexName}…`;
   try {
-    const response = await fetch("/api/index", {
+    const response = await fetch("/api/index/select", {
       method: "POST",
-      headers: { "Content-Type": "application/octet-stream", "X-Index-Filename": file.name },
-      body: file,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ index_name: indexName }),
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Index upload failed.");
+    if (!response.ok) throw new Error(data.error || "Index activation failed.");
     renderActiveIndex(data);
+    await loadLocalIndexes();
   } catch (error) {
     indexMessage.textContent = error.message;
   } finally {
-    indexFileInput.value = "";
+    activateIndexButton.disabled = false;
+    activateIndexButton.textContent = "Activate index";
   }
 });
 
 function renderActiveIndex(data) {
-  indexMessage.textContent = `Active index: ${data.index_name} · ${Number(data.indexed_sentence_count).toLocaleString()} lines`;
+  const archive = data.archive_name ? ` · archive: ${data.archive_name}` : "";
+  indexMessage.textContent = `Active index: ${data.index_name} · ${Number(data.indexed_sentence_count).toLocaleString()} lines${archive}`;
 }
 
 async function loadActiveIndex() {
@@ -345,5 +349,29 @@ async function loadActiveIndex() {
   }
 }
 
+async function loadLocalIndexes() {
+  try {
+    const response = await fetch("/api/indexes");
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Local indexes are unavailable.");
+    const indexes = data.indexes || [];
+    localIndexSelect.replaceChildren();
+    for (const index of indexes) {
+      const option = document.createElement("option");
+      option.value = index.name;
+      option.textContent = `${index.name} (${(index.size_bytes / (1024 ** 3)).toFixed(2)} GiB)`;
+      option.selected = index.active;
+      localIndexSelect.append(option);
+    }
+    activateIndexButton.disabled = !indexes.length;
+    if (!indexes.length) indexMessage.textContent = "No .sqlite3 files were found beside the active index.";
+  } catch (error) {
+    localIndexSelect.replaceChildren();
+    activateIndexButton.disabled = true;
+    indexMessage.textContent = error.message;
+  }
+}
+
 loadActiveIndex();
+loadLocalIndexes();
 setupVoiceTyping();

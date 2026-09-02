@@ -449,9 +449,12 @@ class AutocompleteEngine:
 
         connection = sqlite3.connect(str(self._database_path))
         connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA temp_store = MEMORY")
-        connection.execute("PRAGMA cache_size = -131072")
         try:
+            # A corrupt database can fail while applying these settings. Keep
+            # them within the cleanup boundary so the file is not left locked
+            # before build() discards and rebuilds it.
+            connection.execute("PRAGMA temp_store = MEMORY")
+            connection.execute("PRAGMA cache_size = -131072")
             metadata = connection.execute(
                 """
                 SELECT format_version, archive_size, archive_mtime_ns, file_count, sentence_count

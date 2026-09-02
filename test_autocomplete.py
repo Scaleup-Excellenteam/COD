@@ -5,8 +5,13 @@ Run with: py -m unittest -v
 
 from pathlib import Path
 from contextlib import redirect_stdout
+import http.client
 from io import StringIO
+import json
+from http.server import HTTPServer
+from queue import Queue
 import tempfile
+from threading import Thread
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -18,6 +23,8 @@ from autocomplete import (
     remove_invalid_control_characters,
     run_cli,
 )
+from translation import prepare_hebrew_to_english_translation
+from web_app import AutocompleteWebHandler
 
 
 class AutocompleteSpecificationTests(unittest.TestCase):
@@ -55,6 +62,48 @@ class AutocompleteSpecificationTests(unittest.TestCase):
         self.assertEqual(result.score, 14)
         self.assertEqual(result.source_text, "quotes/example.txt")
         self.assertEqual(result.offset, 2)
+
+    def test_translation_preparation_installs_and_warms_a_missing_model(self) -> None:
+        class TranslationPackage:
+            from_code = "he"
+            to_code = "en"
+
+            def __init__(self) -> None:
+                self.installed = False
+
+            def install(self) -> None:
+                self.installed = True
+
+        class PackageModule:
+            def __init__(self, package: TranslationPackage) -> None:
+                self.package = package
+                self.index_was_updated = False
+
+            def update_package_index(self) -> None:
+                self.index_was_updated = True
+
+            def get_available_packages(self):
+                return [self.package]
+
+        class TranslateModule:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str, str]] = []
+
+            def translate(self, text: str, source: str, target: str) -> str:
+                self.calls.append((text, source, target))
+                return "hello"
+
+        package = TranslationPackage()
+        package_module = PackageModule(package)
+        translate_module = TranslateModule()
+        with patch("translation._argos_modules", return_value=(package_module, translate_module)), patch(
+            "translation._has_hebrew_to_english_model", return_value=False
+        ):
+            prepare_hebrew_to_english_translation()
+
+        self.assertTrue(package_module.index_was_updated)
+        self.assertTrue(package.installed)
+        self.assertEqual(translate_module.calls, [("שלום", "he", "en")])
 
     def test_original_sentence_and_physical_line_number_are_preserved(self) -> None:
         result = self.result_for("a b c")
@@ -250,6 +299,66 @@ class AutocompleteSpecificationTests(unittest.TestCase):
             self.assertTrue(rebuilt_engine.get_best_k_completions("newly indexed"))
         finally:
             rebuilt_engine.close()
+
+    def test_persistent_index_rebuilds_after_a_corrupt_cache_file(self) -> None:
+        index_path = Path(self.temporary_directory.name) / "corrupt-index.sqlite3"
+        first_engine = AutocompleteEngine.from_archive(self.archive_path, index_path=index_path)
+        first_engine.close()
+
+        index_path.write_bytes(b"not a sqlite database")
+        rebuilt_engine = AutocompleteEngine.from_archive(self.archive_path, index_path=index_path)
+        try:
+            self.assertEqual(rebuilt_engine.index_status, "rebuilt")
+            self.assertTrue(rebuilt_engine.get_best_k_completions("to be"))
+        finally:
+            rebuilt_engine.close()
+
+    def test_local_index_selection_switches_to_its_matching_archive(self) -> None:
+        initial_index = Path(self.temporary_directory.name) / "index.sqlite3"
+        alternate_archive = Path(self.temporary_directory.name) / "MORE_DATA.zip"
+        alternate_index = Path(self.temporary_directory.name) / "more_data_index.sqlite3"
+        with zipfile.ZipFile(alternate_archive, "w") as archive:
+            archive.writestr("more.txt", "More data result.\n")
+
+        initial_engine = AutocompleteEngine.from_archive(self.archive_path, index_path=initial_index)
+        alternate_engine = AutocompleteEngine.from_archive(alternate_archive, index_path=alternate_index)
+        alternate_engine.close()
+        server = HTTPServer(("127.0.0.1", 0), AutocompleteWebHandler)
+        server.engine = initial_engine  # type: ignore[attr-defined]
+        server.persistent_index_path = initial_index  # type: ignore[attr-defined]
+        server.index_directory = Path(self.temporary_directory.name)  # type: ignore[attr-defined]
+        server.active_index_name = initial_index.name  # type: ignore[attr-defined]
+        server.active_archive_name = self.archive_path.name  # type: ignore[attr-defined]
+
+        result = Queue()
+
+        def client() -> None:
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=5)
+            try:
+                payload = json.dumps({"index_name": alternate_index.name})
+                connection.request("POST", "/api/index/select", payload, {"Content-Type": "application/json"})
+                response = connection.getresponse()
+                result.put((response.status, json.loads(response.read())))
+            finally:
+                connection.close()
+
+        worker = Thread(target=client, daemon=True)
+        worker.start()
+        try:
+            server.handle_request()
+            worker.join(timeout=5)
+            status, payload = result.get(timeout=1)
+            self.assertEqual(status, 200)
+            self.assertEqual(payload["index_name"], alternate_index.name)
+            self.assertEqual(payload["archive_name"], alternate_archive.name)
+            active_engine = server.engine  # type: ignore[attr-defined]
+            self.assertEqual(
+                active_engine.get_best_k_completions("more data")[0].completed_sentence,
+                "More data result.",
+            )
+        finally:
+            server.engine.close()  # type: ignore[attr-defined]
+            server.server_close()
 
 
 if __name__ == "__main__":

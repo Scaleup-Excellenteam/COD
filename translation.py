@@ -26,12 +26,9 @@ def _has_hebrew_to_english_model(package_module: object) -> bool:
     )
 
 
-def install_hebrew_to_english_model() -> None:
-    """Download the one required model once, after Argos Translate is installed."""
+def _install_hebrew_to_english_model(package_module: object) -> None:
+    """Download and install the Hebrew-to-English Argos model."""
 
-    package_module, _ = _argos_modules()
-    if _has_hebrew_to_english_model(package_module):
-        return
     package_module.update_package_index()
     available_packages = package_module.get_available_packages()
     try:
@@ -43,6 +40,28 @@ def install_hebrew_to_english_model() -> None:
     except StopIteration as error:
         raise TranslationUnavailable("The Hebrew-to-English translation model is unavailable.") from error
     hebrew_to_english.install()
+
+
+def install_hebrew_to_english_model() -> None:
+    """Download the one required model once, after Argos Translate is installed."""
+
+    package_module, _ = _argos_modules()
+    if not _has_hebrew_to_english_model(package_module):
+        _install_hebrew_to_english_model(package_module)
+
+
+def prepare_hebrew_to_english_translation() -> None:
+    """Install, if needed, and warm the local translator during server startup."""
+
+    package_module, translate_module = _argos_modules()
+    if not _has_hebrew_to_english_model(package_module):
+        _install_hebrew_to_english_model(package_module)
+    try:
+        # A short local translation loads the installed model before the first
+        # user query, avoiding a noticeable first-search delay.
+        translate_module.translate("שלום", "he", "en")
+    except Exception as error:
+        raise TranslationUnavailable("The local Hebrew translator could not be prepared.") from error
 
 
 def translate_hebrew_to_english(text: str) -> str:

@@ -39,6 +39,9 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
         if self.path == "/api/status":
             self._send_json(self._index_summary())
             return
+        if self.path == "/api/indexes":
+            self._send_json({"indexes": self._available_local_indexes()})
+            return
         requested = "index.html" if self.path in ("/", "/index.html") else self.path.lstrip("/")
         candidate = (WEB_DIRECTORY / requested).resolve()
         if WEB_DIRECTORY.resolve() not in candidate.parents or not candidate.is_file():
@@ -55,6 +58,9 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802 - required by BaseHTTPRequestHandler
         if self.path == "/api/index":
             self._replace_index_from_upload()
+            return
+        if self.path == "/api/index/select":
+            self._select_local_index()
             return
         if self.path == "/api/translate":
             self._translate_hebrew_to_english()
@@ -196,12 +202,79 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
         setattr(self.server, "active_index_name", Path(filename).name)
         self._send_json({"message": "Index accepted and loaded.", **self._index_summary()})
 
+    def _available_local_indexes(self) -> list[dict[str, Any]]:
+        """List selectable SQLite indexes already stored beside the active index."""
+
+        index_directory: Path = getattr(self.server, "index_directory")
+        active_name = getattr(self.server, "active_index_name")
+        return [
+            {"name": path.name, "size_bytes": path.stat().st_size, "active": path.name == active_name}
+            for path in sorted(index_directory.glob("*.sqlite3"), key=lambda item: item.name.casefold())
+            if path.is_file()
+        ]
+
+    def _select_local_index(self) -> None:
+        """Activate an existing local index and its matching local archive."""
+
+        try:
+            content_length = int(self.headers.get("Content-Length", "0"))
+            if content_length <= 0 or content_length > 4_096:
+                raise ValueError("The index-selection request is invalid.")
+            payload = json.loads(self.rfile.read(content_length).decode("utf-8"))
+            index_name = payload.get("index_name")
+            if not isinstance(index_name, str) or Path(index_name).name != index_name:
+                raise ValueError("Please select an available local index.")
+            if not index_name.lower().endswith(".sqlite3"):
+                raise ValueError("Please select an index.sqlite3 file.")
+
+            index_directory: Path = getattr(self.server, "index_directory")
+            candidate_path = (index_directory / index_name).resolve()
+            if candidate_path.parent != index_directory.resolve() or not candidate_path.is_file():
+                raise ValueError("The selected index file was not found.")
+
+            previous_engine: AutocompleteEngine = getattr(self.server, "engine")
+            candidate, archive_path = self._open_matching_local_index(candidate_path, previous_engine.archive_path)
+        except (OSError, RuntimeError, ValueError, UnicodeDecodeError, json.JSONDecodeError, sqlite3.DatabaseError) as error:
+            self._send_json({"error": "The index was not activated: {0}".format(error)}, HTTPStatus.BAD_REQUEST)
+            return
+
+        previous_engine.close()
+        setattr(self.server, "engine", candidate)
+        setattr(self.server, "persistent_index_path", candidate_path)
+        setattr(self.server, "active_index_name", candidate_path.name)
+        setattr(self.server, "active_archive_name", archive_path.name)
+        self._send_json({"message": "Local index activated.", **self._index_summary()})
+
+    def _open_matching_local_index(
+        self, index_path: Path, current_archive_path: Path
+    ) -> tuple[AutocompleteEngine, Path]:
+        """Open an index with its current archive or a matching local ZIP archive."""
+
+        index_directory: Path = getattr(self.server, "index_directory")
+        archive_candidates = [Path(current_archive_path)]
+        archive_candidates.extend(sorted(index_directory.glob("*.zip"), key=lambda item: item.name.casefold()))
+        checked_paths = set()
+        for archive_path in archive_candidates:
+            resolved_archive = archive_path.resolve()
+            if resolved_archive in checked_paths or not resolved_archive.is_file():
+                continue
+            checked_paths.add(resolved_archive)
+            try:
+                return AutocompleteEngine.from_existing_index(resolved_archive, index_path), resolved_archive
+            except (OSError, RuntimeError, ValueError, sqlite3.DatabaseError):
+                continue
+        raise ValueError(
+            "The selected index does not match the active archive or any local .zip archive. "
+            "Keep its matching archive beside the index."
+        )
+
     def _index_summary(self) -> dict[str, Any]:
         """Describe the exact index currently used by the live engine."""
 
         engine: AutocompleteEngine = getattr(self.server, "engine")
         return {
             "index_name": getattr(self.server, "active_index_name"),
+            "archive_name": getattr(self.server, "active_archive_name"),
             "indexed_sentence_count": engine.indexed_sentence_count,
             "index_status": engine.index_status,
         }
@@ -254,6 +327,20 @@ def main() -> None:
         print("Hebrew-to-English translation is ready.")
         return
 
+    # Do this before accepting requests so the first Hebrew search does not
+    # have to download or load the translation model on behalf of the user.
+    from translation import TranslationUnavailable, prepare_hebrew_to_english_translation
+
+    print("Preparing local Hebrew-to-English translation...", flush=True)
+    try:
+        prepare_hebrew_to_english_translation()
+        print("Local Hebrew-to-English translation is ready.", flush=True)
+    except TranslationUnavailable as error:
+        # Search remains useful even when Argos or its model cannot be
+        # downloaded (for example, while offline). The translate endpoint
+        # continues to return its existing clear error in that case.
+        print("Local Hebrew translation is unavailable: {0}".format(error), flush=True)
+
     print("Preparing autocomplete index...", flush=True)
     started_at = time.perf_counter()
     engine = AutocompleteEngine.from_archive(
@@ -272,6 +359,8 @@ def main() -> None:
     setattr(server, "engine", engine)
     setattr(server, "persistent_index_path", arguments.index.resolve())
     setattr(server, "active_index_name", arguments.index.name)
+    setattr(server, "active_archive_name", arguments.archive.name)
+    setattr(server, "index_directory", arguments.index.resolve().parent)
     server_upload_directory = tempfile.TemporaryDirectory(prefix="autocomplete-upload-")
     setattr(server, "upload_directory", Path(server_upload_directory.name))
     setattr(server, "log_directory", arguments.log_dir)

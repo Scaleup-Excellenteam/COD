@@ -56,12 +56,17 @@ When typed text or a voice transcript is Hebrew, the local server translates it
 to English before searching. Choose **English** or **עברית** from **Voice
 language** before recording; the browser's preferred language is selected
 initially. The translation model is a one-time download and uses no cloud
-translation API:
+translation API. When the server starts, it automatically downloads the model
+if it is missing and loads it once, so the first Hebrew search is ready without
+an extra wait. The first startup can therefore take longer. Install the Python
+dependencies before starting the server:
 
 ```powershell
 py -m pip install -r requirements.txt
-py web_app.py --install-hebrew-translation-model
 ```
+
+`py web_app.py --install-hebrew-translation-model` remains available if you
+want to download the model separately before starting the server.
 
 Speech recognition is supplied by the browser, not by this local Python server.
 Depending on the browser and its configuration, audio may be processed by that

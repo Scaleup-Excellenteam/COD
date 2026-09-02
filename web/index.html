@@ -29,12 +29,12 @@
           <span id="voice-status" class="voice-status" role="status" aria-live="polite" hidden></span>
         </div>
         <div class="engine-tools">
-          <label class="upload-button" for="index-file">
-            <span>Upload index</span>
-            <input id="index-file" type="file" accept=".sqlite3,application/vnd.sqlite3" />
+          <label class="local-index-label" for="local-index">Local index
+            <select id="local-index" aria-label="Select a local SQLite index"></select>
           </label>
+          <button id="activate-index-button" type="button">Activate index</button>
         </div>
-        <p id="index-message" class="index-message">Active index: loading…</p>
+        <p id="index-message" class="index-message">Loading local indexes…</p>
       </section>
 
       <section id="result-area" class="result-area" aria-live="polite">
