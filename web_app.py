@@ -24,7 +24,10 @@ import webbrowser
 from autocomplete import AutocompleteEngine
 
 
-WEB_DIRECTORY = Path(__file__).with_name("web")
+# Keep all default data paths anchored to this project.  A shortcut, IDE, or
+# ``py C:\path\to\web_app.py`` command may use a different working directory.
+PROJECT_DIRECTORY = Path(__file__).resolve().parent
+WEB_DIRECTORY = PROJECT_DIRECTORY / "web"
 MAX_QUERY_LENGTH = 2_000
 MAX_TRANSLATION_TEXT_LENGTH = 500
 MAX_INDEX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024
@@ -306,8 +309,8 @@ class AutocompleteWebHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Local web UI for autocomplete.py")
-    parser.add_argument("--archive", type=Path, default=Path("Archive (2).zip"))
-    parser.add_argument("--index", type=Path, default=Path("index.sqlite3"))
+    parser.add_argument("--archive", type=Path, default=PROJECT_DIRECTORY / "Archive (2).zip")
+    parser.add_argument("--index", type=Path, default=PROJECT_DIRECTORY / "index.sqlite3")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--rebuild-index", action="store_true")
     parser.add_argument("--log-dir", type=Path, default=Path("logs"))

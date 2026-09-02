@@ -17,6 +17,9 @@ py autocomplete.py --archive "Archive (2).zip"
 The program performs the required offline phase first. By default it stores a
 persistent SQLite FTS5 index in `index.sqlite3`: if it matches the current ZIP,
 the next run loads it immediately; otherwise it is created or rebuilt.
+When no `--index` argument is supplied, the web application looks for these
+files in the project directory, even if it was launched from a shortcut or a
+different terminal directory.
 
 ```powershell
 # Force a fresh index build.
