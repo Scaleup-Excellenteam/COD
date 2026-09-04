@@ -3,5 +3,5 @@ __pycache__/
 *.sqlite3
 logs/
 
-# The supplied corpus is input data, not source code for the debug version.
-Archive (2).zip
+# The larger optional corpus is distributed separately.
+MORE_DATA.zip
